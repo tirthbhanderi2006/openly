@@ -36,7 +36,6 @@ class _PostTileState extends State<PostTile> with SingleTickerProviderStateMixin
           setState(() {
             showHeart = false;
           });
-
           _controller.reset();
         });
       }
@@ -486,41 +485,35 @@ class _PostTileState extends State<PostTile> with SingleTickerProviderStateMixin
     );
   }
 
-}
+  // Function to get the current user's profile picture URL
+  Future<String> getCurrentUserImage(String userId) async {
+    try {
+      DocumentSnapshot snapshot = await FirebaseFirestore.instance.collection('users').doc(userId).get();
 
-
-
-
-
-
-// Function to get the current user's profile picture URL
-Future<String> getCurrentUserImage(String userId) async {
-  try {
-    DocumentSnapshot snapshot = await FirebaseFirestore.instance.collection('users').doc(userId).get();
-
-    if (snapshot.exists) {
-      var userDetails = snapshot.data() as Map<String, dynamic>;
-      return userDetails["profilePic"] ?? '';
-    } else {
-      return 'No user found';
+      if (snapshot.exists) {
+        var userDetails = snapshot.data() as Map<String, dynamic>;
+        return userDetails["profilePic"] ?? '';
+      } else {
+        return 'No user found';
+      }
+    } catch (e) {
+      return 'Error fetching profile picture';
     }
-  } catch (e) {
-    return 'Error fetching profile picture';
   }
-}
 // function to get the current user's username
-Future<String> getCurrentUserName() async {
-  try {
-    var userId = FirebaseAuth.instance.currentUser!.uid;
-    DocumentSnapshot snapshot = await FirebaseFirestore.instance.collection('users').doc(userId).get();
+  Future<String> getCurrentUserName() async {
+    try {
+      var userId = FirebaseAuth.instance.currentUser!.uid;
+      DocumentSnapshot snapshot = await FirebaseFirestore.instance.collection('users').doc(userId).get();
 
-    if (snapshot.exists) {
-      var userDetails = snapshot.data() as Map<String, dynamic>;
-      return userDetails["name"] ?? 'No username found';
-    } else {
-      return 'No user found';
+      if (snapshot.exists) {
+        var userDetails = snapshot.data() as Map<String, dynamic>;
+        return userDetails["name"] ?? 'No username found';
+      } else {
+        return 'No user found';
+      }
+    } catch (e) {
+      return 'Error fetching username';
     }
-  } catch (e) {
-    return 'Error fetching username';
   }
 }
