@@ -1,0 +1,134 @@
+{
+  "project_info": {
+    "project_number": "966728588666",
+    "project_id": "the-chatter-8d84f",
+    "storage_bucket": "the-chatter-8d84f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:966728588666:android:23144b330cdd8595978ac3",
+        "android_client_info": {
+          "package_name": "com.example.chat_application"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "966728588666-99c4s7q0k7j45o8c4t07d8fimibegc76.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.chat_application",
+            "certificate_hash": "3a652a5ed06780fe65468dfb6e7b83ae59c696c9"
+          }
+        },
+        {
+          "client_id": "966728588666-r9qu55o3kme9b4228nnl11133hbo14nm.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDLXwK6YnzKmRmdRVrIub7QlbliCk561UQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "966728588666-r9qu55o3kme9b4228nnl11133hbo14nm.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "966728588666-mp24o4t0989r67e5f09gqumm3mbmbsoa.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.chatApplication"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:966728588666:android:4d3f2aa2c5f8d244978ac3",
+        "android_client_info": {
+          "package_name": "com.example.mithc_koko_chat_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "966728588666-r9qu55o3kme9b4228nnl11133hbo14nm.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDLXwK6YnzKmRmdRVrIub7QlbliCk561UQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "966728588666-r9qu55o3kme9b4228nnl11133hbo14nm.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "966728588666-mp24o4t0989r67e5f09gqumm3mbmbsoa.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.chatApplication"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:966728588666:android:063a8674550209b3978ac3",
+        "android_client_info": {
+          "package_name": "com.example.thechatter"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "966728588666-hgg6uovacm6t0g4hvi27mc4n6upqitn3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.thechatter",
+            "certificate_hash": "3a652a5ed06780fe65468dfb6e7b83ae59c696c9"
+          }
+        },
+        {
+          "client_id": "966728588666-r9qu55o3kme9b4228nnl11133hbo14nm.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDLXwK6YnzKmRmdRVrIub7QlbliCk561UQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "966728588666-r9qu55o3kme9b4228nnl11133hbo14nm.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "966728588666-mp24o4t0989r67e5f09gqumm3mbmbsoa.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.chatApplication"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
