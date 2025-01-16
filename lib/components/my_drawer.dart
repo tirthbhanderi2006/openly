@@ -153,7 +153,7 @@ class MyDrawer extends StatelessWidget {
               Navigator.pop(context); // Close dialog
               AuthService().signOut(context); // Perform sign-out
             },
-            child: const Text('Logout'),
+            child: const Text('Logout',style: TextStyle(color: Colors.red),),
           ),
         ],
       ),

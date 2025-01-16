@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get_rx/src/rx_typedefs/rx_typedefs.dart';
 import 'package:mithc_koko_chat_app/components/my_textfield.dart';
 import 'package:mithc_koko_chat_app/model/comments_model.dart';
 import 'package:mithc_koko_chat_app/pages/profile_page.dart';
@@ -12,7 +14,7 @@ import '../model/post_model.dart';
 class PostTile extends StatefulWidget {
   final PostModel model;
 
-  PostTile({super.key, required this.model});
+  const PostTile({super.key, required this.model});
 
   @override
   State<PostTile> createState() => _PostTileState();
@@ -169,62 +171,79 @@ class _PostTileState extends State<PostTile> with SingleTickerProviderStateMixin
                           itemCount: comments.length,
                           itemBuilder: (context, index) {
                             final comment = comments[index];
-                            return ListTile(
-                              leading: FutureBuilder<String>(
-                                future: getCurrentUserImage(comment.userId ==
-                                    FirebaseAuth.instance.currentUser!.uid
-                                    ? FirebaseAuth.instance.currentUser!.uid
-                                    : comment.userId),
-                                builder: (context, snapshot) {
-                                  if (snapshot.connectionState == ConnectionState.waiting) {
+                            return GestureDetector(
+                              onLongPress: () {
+                                showDialog(context: context, builder: (context) {
+                                  return widget.model.userId==FirebaseAuth.instance.currentUser!.uid || comment.userId == FirebaseAuth.instance.currentUser!.uid ? AlertDialog(
+                                    title: Text("Delete comment"),
+                                    content: Text("Are you sure you want to delete this comment?"),
+                                    actions: [
+                                      TextButton(onPressed: (){
+                                        PostServices().deleteComment(postId: widget.model.postId, commentId: comment.id);
+                                        Navigator.pop(context);
+                                      }, child: Text("Delete",style: TextStyle(color: Colors.red),)),
+                                      TextButton(onPressed: ()=>Navigator.pop(context), child: Text("cancel"))
+                                    ],
+                                  ):const SizedBox.shrink();
+                                },);
+                              },
+                              child: ListTile(
+                                leading: FutureBuilder<String>(
+                                  future: getCurrentUserImage(comment.userId ==
+                                      FirebaseAuth.instance.currentUser!.uid
+                                      ? FirebaseAuth.instance.currentUser!.uid
+                                      : comment.userId),
+                                  builder: (context, snapshot) {
+                                    if (snapshot.connectionState == ConnectionState.waiting) {
+                                      return CircleAvatar(
+                                        backgroundColor: isDark
+                                            ? Colors.grey[700]
+                                            : Colors.grey[300],
+                                        radius: 20,
+                                        child: const CircularProgressIndicator(),
+                                      );
+                                    }
+                                    if (snapshot.hasError ||
+                                        !snapshot.hasData ||
+                                        snapshot.data == 'No user found') {
+                                      return CircleAvatar(
+                                        backgroundColor:
+                                        isDark ? Colors.grey[700] : Colors.grey,
+                                        radius: 20,
+                                        child: Icon(Icons.person,
+                                            color: isDark ? Colors.white : Colors.black),
+                              
+                                      );
+                                    }
                                     return CircleAvatar(
-                                      backgroundColor: isDark
-                                          ? Colors.grey[700]
-                                          : Colors.grey[300],
-                                      child: const CircularProgressIndicator(),
+                                      backgroundImage: NetworkImage(snapshot.data!),
                                       radius: 20,
                                     );
-                                  }
-                                  if (snapshot.hasError ||
-                                      !snapshot.hasData ||
-                                      snapshot.data == 'No user found') {
-                                    return CircleAvatar(
-                                      backgroundColor:
-                                      isDark ? Colors.grey[700] : Colors.grey,
-                                      radius: 20,
-                                      child: Icon(Icons.person,
-                                          color: isDark ? Colors.white : Colors.black),
-
-                                    );
-                                  }
-                                  return CircleAvatar(
-                                    backgroundImage: NetworkImage(snapshot.data!),
-                                    radius: 20,
-                                  );
-                                },
-                              ),
-                              title: Text(
-                                comment.userId ==
-                                    FirebaseAuth.instance.currentUser!.uid
-                                    ? '${comment.userName}(you)'
-                                    : comment.userName,
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
-                                  color: isDark ? Colors.white : Colors.black,
+                                  },
                                 ),
-                              ),
-                              subtitle: Text(
-                                comment.text,
-                                style: TextStyle(
-                                  color: isDark ? Colors.grey[300] : Colors.black,
+                                title: Text(
+                                  comment.userId ==
+                                      FirebaseAuth.instance.currentUser!.uid
+                                      ? '${comment.userName}(you)'
+                                      : comment.userName,
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                    color: isDark ? Colors.white : Colors.black,
+                                  ),
                                 ),
-                              ),
-                              trailing: Text(
-                                '${comment.timeStamp.toLocal()}'.split(' ')[0],
-                                style: TextStyle(
-                                  color: isDark ? Colors.grey[500] : Colors.grey[600],
-                                  fontSize: 12,
+                                subtitle: Text(
+                                  comment.text,
+                                  style: TextStyle(
+                                    color: isDark ? Colors.grey[300] : Colors.black,
+                                  ),
+                                ),
+                                trailing: Text(
+                                  '${comment.timeStamp.toLocal()}'.split(' ')[0],
+                                  style: TextStyle(
+                                    color: isDark ? Colors.grey[500] : Colors.grey[600],
+                                    fontSize: 12,
+                                  ),
                                 ),
                               ),
                             );
@@ -268,9 +287,6 @@ class _PostTileState extends State<PostTile> with SingleTickerProviderStateMixin
       },
     );
   }
-
-
-
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
@@ -304,15 +320,15 @@ class _PostTileState extends State<PostTile> with SingleTickerProviderStateMixin
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return CircleAvatar(
                           backgroundColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.2),
-                          child: const CircularProgressIndicator(),
                           radius: 20,
+                          child: const CircularProgressIndicator(),
                         );
                       }
                       if (snapshot.hasError || !snapshot.hasData || snapshot.data == 'No user found') {
                         return CircleAvatar(
                           backgroundColor: Theme.of(context).dividerColor,
-                          child: Icon(Icons.person, color: Theme.of(context).iconTheme.color),
                           radius: 20,
+                          child: Icon(Icons.person, color: Theme.of(context).iconTheme.color),
                         );
                       }
                       return CircleAvatar(
@@ -483,8 +499,8 @@ class _PostTileState extends State<PostTile> with SingleTickerProviderStateMixin
         ),
       ),
     );
-  }
 
+  }
   // Function to get the current user's profile picture URL
   Future<String> getCurrentUserImage(String userId) async {
     try {

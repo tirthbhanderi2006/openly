@@ -22,16 +22,16 @@ class PostServices{
       final postDoc=await _firestore.collection("posts").doc(postId).get();
       if(postDoc.exists){
         final post=PostModel.fromJson(postDoc.data() as Map<String,dynamic>);
-      //   check if user has already liked the post or not
 
+      //   check if user has already liked the post or not
         final hasLiked=post.likes.contains(userId);
+
       // update the  like list
         if(hasLiked){
           post.likes.remove(userId);//unlike the post
         }else{
           post.likes.add(userId);//liking the post
         }
-
       //   update post document with likes list
         await _firestore.collection("posts").doc(postId).update({
           'likes':post.likes
@@ -75,7 +75,7 @@ class PostServices{
         post.comments.removeWhere((comment)=>comment.id == commentId);
         //   update firestore
         await _firestore.collection("posts").doc(postId).update({
-          'comments':post.comments.map((comment) => comment.toJson(),).toList()
+          'comments' :  post.comments.map((comment) => comment.toJson(),).toList()
         });
       }else{
         throw Exception('Post not found');
@@ -83,6 +83,5 @@ class PostServices{
     }catch(e){
       print('Error : $e');
     }
-
   }
 }

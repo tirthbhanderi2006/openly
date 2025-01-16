@@ -62,18 +62,46 @@ Stream<QuerySnapshot<Object?>> getMessages(String userId, String otherUserId) {
   }
 
 // get all users expect blocked user steam
-  Stream<List<Map<String,dynamic>>> getUserStreamExcludingBlocked(){
-  final currentuser=FirebaseAuth.instance.currentUser;
-  
-  return _firestore.collection("users").doc(currentuser!.uid).collection("BlockedUsers").snapshots().asyncMap((snapshot) async{
-      // get blocked userIds
-      final blockUserIds=snapshot.docs.map((doc) => doc.id,).toList();
-      // get all users
-      final usersSnapshot=await _firestore.collection("users").get();
+  Stream<List<Map<String, dynamic>>> getUserStreamExcludingBlocked() {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    return _firestore.collection("users").doc(currentUser!.uid).collection("BlockedUsers").snapshots().asyncMap((snapshot) async {
+      // Get blocked userIds
+      final blockUserIds = snapshot.docs.map((doc) => doc.id).toList();
+
+      // Get the current user's following list
+      final followingList = await getFollowingList(currentUser.uid);
+
+      // Get all users
+      final usersSnapshot = await _firestore.collection("users").get();
+
       return usersSnapshot.docs
-          .where((doc) => doc.data()['email']!=currentuser.email && !blockUserIds.contains(doc.id),).map((doc) => doc.data(),).toList();
-  },);
+          .where((doc) =>
+      doc.data()['email'] != currentUser.email &&
+          !blockUserIds.contains(doc.id) &&
+          followingList.contains(doc.id)
+      )
+          .map((doc) => doc.data())
+          .toList();
+    });
   }
+
+// Function to get the current user's username
+  Future<List<dynamic>> getFollowingList(String userId) async {
+    try {
+      DocumentSnapshot snapshot = await FirebaseFirestore.instance.collection('users').doc(userId).get();
+      if (snapshot.exists) {
+        var userDetails = snapshot.data() as Map<String, dynamic>;
+        print("Following: ${userDetails['following']}");
+        return userDetails["following"] ?? [];
+      } else {
+        return [];
+      }
+    } catch (e) {
+      print("Error : $e");
+      return [];
+    }
+  }
+
 
 //report user
 Future<void> reportUser(String messageId,String userId)async{
@@ -126,5 +154,6 @@ Future<void> blockUser(String userId)async{
       return userDocs.map((doc) => doc.data() as Map<String,dynamic>,).toList();
     });
   }
+
 
 }

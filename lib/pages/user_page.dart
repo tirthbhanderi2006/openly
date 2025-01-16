@@ -1,12 +1,23 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../components/user_tile.dart';
 import '../services/chat_services.dart';
 import 'chat_page.dart';
 
-class UsersPage extends StatelessWidget {
+class UsersPage extends StatefulWidget {
   const UsersPage({super.key});
 
+  @override
+  State<UsersPage> createState() => _UsersPageState();
+}
+
+class _UsersPageState extends State<UsersPage> {
+  @override
+  void initState() {
+    ChatServices().getFollowingList(FirebaseAuth.instance.currentUser!.uid);
+    super.initState();
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -20,6 +31,7 @@ class UsersPage extends StatelessWidget {
       body: _buildUsersList(),
     );
   }
+
   Widget _buildUsersList() {
     return StreamBuilder<List<Map<String, dynamic>>>(
       stream: ChatServices().getUserStreamExcludingBlocked(),

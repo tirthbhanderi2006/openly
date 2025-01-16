@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mithc_koko_chat_app/components/bio_box.dart';
+import 'package:mithc_koko_chat_app/pages/chat_page.dart';
 import 'package:mithc_koko_chat_app/pages/followers_list.dart';
 import 'package:mithc_koko_chat_app/services/post_services.dart';
 import '../components/follow_button.dart';
@@ -60,9 +61,9 @@ class ProfilePage extends StatelessWidget {
                 children: [
                   Text(
                     userDetails['email'] ?? 'No email',
-                    style: TextStyle(color: Theme.of(context).colorScheme.inversePrimary),
+                    style: TextStyle(
+                        color: Theme.of(context).colorScheme.inversePrimary),
                   ),
-
                   const SizedBox(height: 25),
                   Container(
                     height: 120,
@@ -70,20 +71,21 @@ class ProfilePage extends StatelessWidget {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       image: userDetails['profilePic'] != null &&
-                          userDetails['profilePic']!.isNotEmpty
+                              userDetails['profilePic']!.isNotEmpty
                           ? DecorationImage(
-                        image: NetworkImage(userDetails['profilePic']),
-                        fit: BoxFit.cover,
-                      )
+                              image: NetworkImage(userDetails['profilePic']),
+                              fit: BoxFit.cover,
+                            )
                           : const DecorationImage(
-                        image: NetworkImage(
-                            'https://www.gravatar.com/avatar/?d=identicon'),
-                        fit: BoxFit.cover,
-                      ),
+                              image: NetworkImage(
+                                  'https://www.gravatar.com/avatar/?d=identicon'),
+                              fit: BoxFit.cover,
+                            ),
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 20.0),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 16.0, horizontal: 20.0),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
@@ -91,27 +93,38 @@ class ProfilePage extends StatelessWidget {
                         Column(
                           children: [
                             Obx(() => GestureDetector(
-                              onTap:() {
-                                Navigator.push(context, MaterialPageRoute(builder: (context) => FollowersList(
-                                    following:  List<String>.from(userDetails['followers'] ?? []),
-                                    followers: List<String>.from(userDetails['following'])??[]),)
-                                );
-                              },
-                              child: Text(
-                                "${profileController.followersCount}",
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Theme.of(context).colorScheme.primary,
-                                ),
-                              ),
-                            )),
+                                  onTap: () {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => FollowersList(
+                                              following: List<String>.from(
+                                                  userDetails['followers'] ??
+                                                      []),
+                                              followers: List<String>.from(
+                                                      userDetails[
+                                                          'following']) ??
+                                                  []),
+                                        ));
+                                  },
+                                  child: Text(
+                                    "${profileController.followersCount}",
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color:
+                                          Theme.of(context).colorScheme.primary,
+                                    ),
+                                  ),
+                                )),
                             const SizedBox(height: 5),
                             Text(
                               "Followers",
                               style: TextStyle(
                                 fontSize: 14,
-                                color: Theme.of(context).colorScheme.inversePrimary,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .inversePrimary,
                               ),
                             ),
                           ],
@@ -120,19 +133,22 @@ class ProfilePage extends StatelessWidget {
                         Column(
                           children: [
                             Obx(() => Text(
-                              "${profileController.followingCount}",
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Theme.of(context).colorScheme.primary,
-                              ),
-                            )),
+                                  "${profileController.followingCount}",
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
+                                  ),
+                                )),
                             const SizedBox(height: 5),
                             Text(
                               "Following",
                               style: TextStyle(
                                 fontSize: 14,
-                                color: Theme.of(context).colorScheme.inversePrimary,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .inversePrimary,
                               ),
                             ),
                           ],
@@ -141,19 +157,22 @@ class ProfilePage extends StatelessWidget {
                         Column(
                           children: [
                             Obx(() => Text(
-                              "${profileController.posts.length}",
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Theme.of(context).colorScheme.primary,
-                              ),
-                            )),
+                                  "${profileController.posts.length}",
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
+                                  ),
+                                )),
                             const SizedBox(height: 5),
                             Text(
                               "Posts",
                               style: TextStyle(
                                 fontSize: 14,
-                                color: Theme.of(context).colorScheme.inversePrimary,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .inversePrimary,
                               ),
                             ),
                           ],
@@ -167,17 +186,61 @@ class ProfilePage extends StatelessWidget {
                       // FollowButton(onPress: (){},text: "Follow",),
                       Expanded(
                         child: FirebaseAuth.instance.currentUser!.uid != userId
-                            ? ElevatedButton(
-                          onPressed: () {
-                            profileController.toggleFollow(
-                                FirebaseAuth.instance.currentUser!.uid, userId);
-                          },
-                          child: Obx(() {
-                            final isFollowing = (profileController.userDetails['followers'] ?? [])
-                                .contains(FirebaseAuth.instance.currentUser!.uid);
-                            return Text(isFollowing ? 'Unfollow' : 'Follow');
-                          }),
-                        )
+                            ? Obx(() {
+                          final isFollowing = (profileController.userDetails['followers'] ?? [])
+                              .contains(FirebaseAuth.instance.currentUser!.uid);
+
+                          return Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              // Follow/Unfollow Button
+                              ConstrainedBox(
+                                constraints: BoxConstraints.tightFor(width: 120, height: 50),
+                                child: ElevatedButton(
+                                  onPressed: () {
+                                    profileController.toggleFollow(
+                                      FirebaseAuth.instance.currentUser!.uid,
+                                      userId,
+                                    );
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    backgroundColor: Colors.blue,
+                                  ),
+                                  child: Text(
+                                    isFollowing ? 'Unfollow' : 'Follow',
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                ),
+                              ),
+                              if (isFollowing) ...[
+                                SizedBox(width: 10), // Spacing between buttons
+                                // Message Button
+                                ConstrainedBox(
+                                  constraints: BoxConstraints.tightFor(width: 120, height: 50),
+                                  child: ElevatedButton(
+                                    onPressed: () {
+                                      // Navigate to the chat screen or message functionality
+                                      Navigator.push(context, MaterialPageRoute(builder: (context) => ChatPage(receiverEmail: userDetails['email'], receiverId: userDetails['uid'],),));
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      backgroundColor: Colors.green,
+                                    ),
+                                    child: Text(
+                                      'Message',
+                                      style: TextStyle(color: Colors.white),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          );
+                        })
                             : Text(""),
                       ),
 
@@ -228,7 +291,8 @@ class ProfilePage extends StatelessWidget {
                 return Center(
                   child: Text(
                     "No posts available",
-                    style: TextStyle(color: Theme.of(context).colorScheme.primary),
+                    style:
+                        TextStyle(color: Theme.of(context).colorScheme.primary),
                   ),
                 );
               }
@@ -241,7 +305,8 @@ class ProfilePage extends StatelessWidget {
                 itemCount: posts.length,
                 itemBuilder: (context, index) {
                   return GestureDetector(
-                    onLongPress: () => _showPostPreviewDialog(context, index, posts),
+                    onLongPress: () =>
+                        _showPostPreviewDialog(context, index, posts),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(5),
                       child: Image.network(
@@ -259,7 +324,8 @@ class ProfilePage extends StatelessWidget {
     );
   }
 
-  void _showPostPreviewDialog(BuildContext context, int index, List<PostModel> posts) {
+  void _showPostPreviewDialog(
+      BuildContext context, int index, List<PostModel> posts) {
     showDialog(
       context: context,
       builder: (context) {
@@ -309,7 +375,8 @@ class ProfilePage extends StatelessWidget {
                           children: [
                             TextButton(
                               onPressed: () {
-                                PostServices().deletePost(postId: posts[index].postId);
+                                PostServices()
+                                    .deletePost(postId: posts[index].postId);
                                 Navigator.of(context).pop();
                               },
                               child: Text(
