@@ -11,6 +11,7 @@ import 'package:mithc_koko_chat_app/services/chat_services.dart';
 import 'package:mithc_koko_chat_app/services/post_services.dart';
 import 'package:mithc_koko_chat_app/themes/theme_provider.dart';
 import '../model/post_model.dart';
+import 'post_header_widget.dart';
 
 class PostTile extends StatefulWidget {
   final PostModel model;
@@ -213,7 +214,7 @@ class _PostTileState extends State<PostTile> with SingleTickerProviderStateMixin
                                         radius: 20,
                                         child: Icon(Icons.person,
                                             color: isDark ? Colors.white : Colors.black),
-                              
+
                                       );
                                     }
                                     return CircleAvatar(
@@ -288,6 +289,7 @@ class _PostTileState extends State<PostTile> with SingleTickerProviderStateMixin
       },
     );
   }
+
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
@@ -312,97 +314,10 @@ class _PostTileState extends State<PostTile> with SingleTickerProviderStateMixin
             // Header
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8),
-              child: Row(
-                children: [
-                  // Profile Picture
-                  FutureBuilder<String>(
-                    future: getCurrentUserImage(widget.model.userId),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return CircleAvatar(
-                          backgroundColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.2),
-                          radius: 20,
-                          child: const CircularProgressIndicator(),
-                        );
-                      }
-                      if (snapshot.hasError || !snapshot.hasData || snapshot.data == 'No user found') {
-                        return CircleAvatar(
-                          backgroundColor: Theme.of(context).dividerColor,
-                          radius: 20,
-                          child: Icon(Icons.person, color: Theme.of(context).iconTheme.color),
-                        );
-                      }
-                      return CircleAvatar(
-                        backgroundImage: NetworkImage(snapshot.data!),
-                        radius: 20,
-                      );
-                    },
-                  ),
-                  const SizedBox(width: 10),
-                  GestureDetector(
-                    onTap: () => Navigator.push(
-                      context,
-                      SlideUpNavigationAnimation(child: ProfilePage(userId: widget.model.userId)),
-                    ),
-                    child: Text(
-                      widget.model.userName,
-                      style: Theme.of(context).textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  const Spacer(),
-                  // Delete/Block Options
-                  widget.model.userId == FirebaseAuth.instance.currentUser!.uid
-                      ? IconButton(
-                    icon: const Icon(Icons.delete),
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder: (context) {
-                          return AlertDialog(
-                            title: const Text('Delete!'),
-                            content: const Text('Are you sure you want to delete this post?'),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context),
-                                child: const Text("Cancel"),
-                              ),
-                              TextButton(
-                                onPressed: () {
-                                  PostServices().deletePost(postId: widget.model.postId);
-                                  Navigator.pop(context);
-                                },
-                                child: const Text(
-                                  "Delete",
-                                  style: TextStyle(color: Colors.red),
-                                ),
-                              ),
-                            ],
-                          );
-                        },
-                      );
-                    },
-                  )
-                      : PopupMenuButton<String>(
-                    icon: const Icon(Icons.more_vert),
-                    onSelected: (value) {
-                      if (value == 'block') {
-                        ChatServices().blockUser(widget.model.userId);
-                      }
-                    },
-                    itemBuilder: (context) => [
-                      PopupMenuItem<String>(
-                        value: 'block',
-                        child: Row(
-                          children: [
-                            Icon(Icons.block, color: Theme.of(context).colorScheme.error),
-                            const SizedBox(width: 10),
-                            const Text('Block User'),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+              child:  ProfileWidget(
+                userId: widget.model.userId,
+                userName: widget.model.userName,
+                postId: widget.model.postId,
               ),
             ),
             // Post Image
@@ -488,7 +403,8 @@ class _PostTileState extends State<PostTile> with SingleTickerProviderStateMixin
                       ),
                     ),
                   Text(
-                    'Posted on ${widget.model.timeStamp}',
+                    // '${comment.timeStamp.toLocal()}'.split(' ')[0],
+                    'Posted on ${'${widget.model.timeStamp.toLocal()}'.split(' ')[0]}',
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ],

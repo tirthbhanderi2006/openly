@@ -188,13 +188,12 @@ class HomePage extends StatelessWidget {
 
             // Filter posts based on the following list
             List<PostModel> posts = snapshot.data!.docs
-                .where((doc) {
+              .where((doc) {
               var data = doc.data() as Map<String, dynamic>;
-              return followingList.contains(data['userId']); // Ensure userId matches your Firestore field
+              return followingList.contains(data['userId']) || data['userId'] == FirebaseAuth.instance.currentUser!.uid; // Ensure userId matches your Firestore field
             })
-                .map((doc) => PostModel.fromJson(doc.data() as Map<String, dynamic>))
-                .toList();
-
+              .map((doc) => PostModel.fromJson(doc.data() as Map<String, dynamic>))
+              .toList();
             if (posts.isEmpty) {
               return Center(child: Text('No posts from followed users.'));
             }
