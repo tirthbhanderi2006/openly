@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:mithc_koko_chat_app/page_transition/slide_right_page_transition.dart';
 import 'package:mithc_koko_chat_app/pages/profile_page.dart';
 import 'package:mithc_koko_chat_app/services/auth_services.dart';
 import 'package:mithc_koko_chat_app/pages/setting_page.dart';
@@ -49,7 +50,7 @@ class MyDrawer extends StatelessWidget {
             label: 'P R O F I L E',
             onTap: () {
               Navigator.pop(context); // Close drawer
-              Navigator.push(context, MaterialPageRoute(builder: (context) => ProfilePage(userId: FirebaseAuth.instance.currentUser!.uid,),));
+              Navigator.push(context, SlideRightPageTransition(child: ProfilePage(userId: FirebaseAuth.instance.currentUser!.uid)));
             },
             isDark: isDark,
           ),
@@ -74,7 +75,7 @@ class MyDrawer extends StatelessWidget {
               Navigator.pop(context); // Close drawer
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const SettingPage()),
+                  SlideRightPageTransition(child: SettingPage())
               );
             },
             isDark: isDark,

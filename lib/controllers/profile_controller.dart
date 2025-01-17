@@ -15,7 +15,6 @@ class ProfileController extends GetxController {
   void fetchUserDetails(String userId) {
     // Cancel any existing subscription to avoid multiple listeners
     _userDetailsSubscription?.cancel();
-
     _userDetailsSubscription = FirebaseFirestore.instance
         .collection('users')
         .doc(userId)

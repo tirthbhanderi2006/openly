@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get_rx/src/rx_typedefs/rx_typedefs.dart';
 import 'package:mithc_koko_chat_app/components/my_textfield.dart';
 import 'package:mithc_koko_chat_app/model/comments_model.dart';
+import 'package:mithc_koko_chat_app/page_transition/slide_up_page_transition.dart';
 import 'package:mithc_koko_chat_app/pages/profile_page.dart';
 import 'package:mithc_koko_chat_app/services/chat_services.dart';
 import 'package:mithc_koko_chat_app/services/post_services.dart';
@@ -341,9 +342,7 @@ class _PostTileState extends State<PostTile> with SingleTickerProviderStateMixin
                   GestureDetector(
                     onTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) => ProfilePage(userId: widget.model.userId),
-                      ),
+                      SlideUpNavigationAnimation(child: ProfilePage(userId: widget.model.userId)),
                     ),
                     child: Text(
                       widget.model.userName,

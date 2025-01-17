@@ -113,10 +113,9 @@ class ChatBubble extends StatelessWidget {
       child: Align(
         alignment: isCurrentUser ? Alignment.centerRight : Alignment.centerLeft,
         child: Container(
-          padding: const EdgeInsets.all(12),
+          padding: EdgeInsets.all(imageUrl == null ? 12 : 4),
           margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-          decoration: imageUrl == null
-              ? BoxDecoration(
+          decoration: BoxDecoration(
             borderRadius: BorderRadius.only(
               topLeft: Radius.circular(isCurrentUser ? 12 : 0),
               topRight: Radius.circular(isCurrentUser ? 0 : 12),
@@ -131,8 +130,8 @@ class ChatBubble extends StatelessWidget {
                 offset: const Offset(2, 2),
               ),
             ],
-          )
-              : null, // No decoration for images
+          ),
+          // No decoration for images
           child: Column(
             crossAxisAlignment: isCurrentUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
             children: [
@@ -145,6 +144,20 @@ class ChatBubble extends StatelessWidget {
                     height: 200,
                     // width: 200,
                     fit: BoxFit.cover,
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) {
+                        return child;
+                      } else {
+                        return Center(
+                          child: CircularProgressIndicator(
+                            value: loadingProgress.expectedTotalBytes != null
+                                ? loadingProgress.cumulativeBytesLoaded /
+                                (loadingProgress.expectedTotalBytes ?? 1)
+                                : null,
+                          ),
+                        );
+                      }
+                    },
                     errorBuilder: (context, error, stackTrace) {
                       return const Icon(Icons.broken_image, color: Colors.red, size: 100);
                     },
@@ -162,4 +175,5 @@ class ChatBubble extends StatelessWidget {
       ),
     );
   }
+
 }

@@ -3,10 +3,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mithc_koko_chat_app/components/bio_box.dart';
+import 'package:mithc_koko_chat_app/page_transition/slide_left_page_transition.dart';
 import 'package:mithc_koko_chat_app/pages/chat_page.dart';
 import 'package:mithc_koko_chat_app/pages/followers_list.dart';
 import 'package:mithc_koko_chat_app/services/post_services.dart';
-import '../components/follow_button.dart';
 import '../controllers/profile_controller.dart';
 import '../model/post_model.dart';
 import 'edit_profile_page.dart';
@@ -30,7 +30,7 @@ class ProfilePage extends StatelessWidget {
             IconButton(
               onPressed: () => Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => EditProfilePage()),
+                SlideLeftPageTransition(child: EditProfilePage()),
               ),
               icon: const Icon(Icons.settings),
             ),

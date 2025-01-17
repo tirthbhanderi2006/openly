@@ -2,11 +2,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:mithc_koko_chat_app/components/my_drawer.dart';
 import 'package:mithc_koko_chat_app/components/post_tile.dart';
+import 'package:mithc_koko_chat_app/pages/profile_page.dart';
 import 'package:mithc_koko_chat_app/pages/user_page.dart';
 import 'package:mithc_koko_chat_app/services/chat_services.dart';
 
 import '../components/user_tile.dart';
 import '../model/post_model.dart';
+import '../page_transition/slide_left_page_transition.dart';
+import '../page_transition/slide_up_page_transition.dart';
 import 'chat_page.dart';
 import 'create_post_page.dart';
 
@@ -19,7 +22,7 @@ class HomePage extends StatelessWidget {
       backgroundColor: Theme.of(context).colorScheme.background,
       appBar: AppBar(
         actions: [
-          IconButton(onPressed: ()=>Navigator.push(context, MaterialPageRoute(builder: (context) => CreatePostPage(),)), icon: Icon(Icons.add_box_outlined)),
+          IconButton(onPressed: ()=>Navigator.push(context, SlideLeftPageTransition(child: CreatePostPage())), icon: Icon(Icons.add_box_outlined)),
           // Padding(
           //   padding: const EdgeInsets.only(top: 6.0),
           //   child: GestureDetector(
@@ -29,7 +32,7 @@ class HomePage extends StatelessWidget {
           // ),
           Padding(
             padding: const EdgeInsets.only(right: 8.0,bottom: 5),
-            child: IconButton(onPressed: ()=>Navigator.push(context, MaterialPageRoute(builder: (context) => UsersPage(),)), icon: Icon(Icons.message)),
+            child: IconButton(onPressed: ()=>Navigator.push(context, SlideLeftPageTransition(child: UsersPage())), icon: Icon(Icons.message)),
               // child: GestureDetector(
               //   onTap: ()=>Navigator.push(context, MaterialPageRoute(builder: (context) => UsersPage())),
               //     child: Image.asset("lib/assets/direct.gif",width: 60,)
@@ -71,10 +74,29 @@ class HomePage extends StatelessWidget {
         }
 
         // Build the user list
-        return ListView(
-          children: snapshot.data!
-              .map((userData) => _buildUsersListItem(userData, context))
-              .toList(),
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Add a title
+            Padding(
+              padding: const EdgeInsets.all(18.0), // Adjust padding as needed
+              child: Text(
+                '''"Openly: Discover, Connect, Share."''',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ), // Use your desired style
+              ),
+            ),
+
+            // Add the ListView
+            Expanded( // Make sure ListView takes the available space
+              child: ListView(
+                children: snapshot.data!
+                    .map((userData) => _buildUsersListItem(userData, context))
+                    .toList(),
+              ),
+            ),
+          ],
         );
       },
     );
@@ -88,9 +110,7 @@ class HomePage extends StatelessWidget {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(
-            builder: (context) => ChatPage(receiverEmail: userData['email'],receiverId: userData['uid'],),
-          ),
+            SlideUpNavigationAnimation(child: ProfilePage(userId: userData['uid']))
         );
       },
     );

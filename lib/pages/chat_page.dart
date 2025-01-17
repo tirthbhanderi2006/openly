@@ -1,13 +1,14 @@
 import 'dart:io';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:mithc_koko_chat_app/components/chat_bubble.dart';
-import 'package:mithc_koko_chat_app/components/my_textfield.dart';
-import 'package:mithc_koko_chat_app/services/chat_services.dart';
+
+import '../components/chat_bubble.dart';
+import '../components/my_textfield.dart';
+import '../services/chat_services.dart';
 
 class ChatPage extends StatefulWidget {
   final String receiverEmail;
@@ -23,16 +24,18 @@ class _ChatPageState extends State<ChatPage> {
   final FocusNode node = FocusNode();
   final TextEditingController _messageController = TextEditingController();
   final ScrollController scrollController = ScrollController();
+  late Future<Map<String, dynamic>> userDetailsFuture;
 
   @override
   void initState() {
+    super.initState();
+    userDetailsFuture = getUserDetails(widget.receiverId);
+
     node.addListener(() {
       if (node.hasFocus) {
         Future.delayed(const Duration(milliseconds: 500), () => scrollToBottom());
       }
     });
-    Future.delayed(const Duration(milliseconds: 500), () => scrollToBottom());
-    super.initState();
   }
 
   @override
@@ -50,6 +53,20 @@ class _ChatPageState extends State<ChatPage> {
     );
   }
 
+  Future<Map<String, dynamic>> getUserDetails(String userId) async {
+    try {
+      DocumentSnapshot snapshot =
+      await FirebaseFirestore.instance.collection("users").doc(userId).get();
+      if (snapshot.exists) {
+        return snapshot.data() as Map<String, dynamic>;
+      } else {
+        return {};
+      }
+    } catch (e) {
+      print('Error: $e');
+      return {};
+    }
+  }
   Future<void> sendMessage(BuildContext context, {String? imageUrl}) async {
     if (_messageController.text.trim().isEmpty && imageUrl == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -101,20 +118,98 @@ class _ChatPageState extends State<ChatPage> {
     }
   }
 
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return FutureBuilder<Map<String, dynamic>>(
+      future: userDetailsFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Scaffold(
+            backgroundColor: theme.colorScheme.background,
+            body: const Center(
+              child: CircularProgressIndicator(),
+            ),
+          );
+        }
+        if (snapshot.hasError) {
+          return Scaffold(
+            backgroundColor: theme.colorScheme.background,
+            body: Center(
+              child: Text(
+                "Error: ${snapshot.error}",
+                style: TextStyle(color: theme.colorScheme.onBackground),
+              ),
+            ),
+          );
+        }
+
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return Scaffold(
+            backgroundColor: theme.colorScheme.background,
+            body: const Center(
+              child: Text("User not found."),
+            ),
+          );
+        }
+
+        Map<String, dynamic> userMap = snapshot.data!;
+
+        return Scaffold(
+          backgroundColor: theme.colorScheme.background,
+          appBar: AppBar(
+            automaticallyImplyLeading: true,
+            leading: Padding(
+              padding: const EdgeInsets.all(8.0), // Reduced padding
+              child: CircleAvatar(
+                backgroundImage: userMap['profilePic'] != null
+                    ? NetworkImage(userMap['profilePic'])
+                    : null,
+                backgroundColor: userMap['profilePic'] == null
+                    ? theme.colorScheme.primary
+                    : Colors.transparent,
+                child: userMap['profilePic'] == null
+                    ? const Icon(Icons.person, color: Colors.white)
+                    : null,
+              ),
+            ),
+            title: Text(
+              userMap['name'] ?? "Unknown User",
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+            ),
+            centerTitle: false,
+            titleSpacing: 0,
+            backgroundColor: theme.colorScheme.primary,
+            foregroundColor: Colors.white,
+            elevation: 0,
+          ),
+          body: Column(
+            children: [
+              Expanded(child: _buildMessageList()),
+              _buildUserInput(context),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildMessageList() {
     String senderId = FirebaseAuth.instance.currentUser!.uid;
     return StreamBuilder(
       stream: ChatServices().getMessages(widget.receiverId, senderId),
       builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}'));
-        }
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         }
+        if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        }
         return ListView(
           controller: scrollController,
-          children: snapshot.data!.docs.map((doc) => _buildMessageItem(doc)).toList(),
+          children:
+          snapshot.data!.docs.map((doc) => _buildMessageItem(doc)).toList(),
         );
       },
     );
@@ -180,28 +275,5 @@ class _ChatPageState extends State<ChatPage> {
       ),
     );
   }
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Scaffold(
-      backgroundColor: theme.colorScheme.background,
-      appBar: AppBar(
-        title: Text(
-          widget.receiverEmail,
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
-        centerTitle: true,
-        backgroundColor: Colors.transparent,
-        foregroundColor: theme.colorScheme.primary,
-        elevation: 0,
-      ),
-      body: Column(
-        children: [
-          Expanded(child: _buildMessageList()),
-          _buildUserInput(context),
-        ],
-      ),
-    );
-  }
 }
+

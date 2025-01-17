@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:mithc_koko_chat_app/page_transition/slide_left_page_transition.dart';
 
 import '../components/user_tile.dart';
 import '../services/chat_services.dart';
@@ -73,9 +74,7 @@ class _UsersPageState extends State<UsersPage> {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(
-            builder: (context) => ChatPage(receiverEmail: userData['email'],receiverId: userData['uid'],),
-          ),
+           SlideLeftPageTransition(child: ChatPage(receiverEmail: userData['email'],receiverId: userData['uid'],))
         );
       },
     );
