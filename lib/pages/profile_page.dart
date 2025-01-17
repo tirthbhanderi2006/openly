@@ -3,7 +3,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mithc_koko_chat_app/components/bio_box.dart';
+import 'package:mithc_koko_chat_app/components/name_box.dart';
 import 'package:mithc_koko_chat_app/page_transition/slide_left_page_transition.dart';
+import 'package:mithc_koko_chat_app/page_transition/slide_right_page_transition.dart';
 import 'package:mithc_koko_chat_app/pages/chat_page.dart';
 import 'package:mithc_koko_chat_app/pages/followers_list.dart';
 import 'package:mithc_koko_chat_app/services/post_services.dart';
@@ -223,7 +225,7 @@ class ProfilePage extends StatelessWidget {
                                   child: ElevatedButton(
                                     onPressed: () {
                                       // Navigate to the chat screen or message functionality
-                                      Navigator.push(context, MaterialPageRoute(builder: (context) => ChatPage(receiverEmail: userDetails['email'], receiverId: userDetails['uid'],),));
+                                      Navigator.push(context,SlideRightPageTransition(child: ChatPage(receiverEmail: userDetails['email'], receiverId: userDetails['uid'])));
                                     },
                                     style: ElevatedButton.styleFrom(
                                       shape: RoundedRectangleBorder(
@@ -243,10 +245,29 @@ class ProfilePage extends StatelessWidget {
                         })
                             : Text(""),
                       ),
-
                     ],
                   ),
+                  // Divider(),
                   const SizedBox(height: 25),
+                // Divider(),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8.0),
+                    child: Row(
+                      children: [
+                        Text(
+                          'Name',
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  NameBox(
+                    nameText: userDetails['name'] ?? "No name available",
+                  ),
+                  const SizedBox(height: 22,),
                   Padding(
                     padding: const EdgeInsets.only(left: 8.0),
                     child: Row(

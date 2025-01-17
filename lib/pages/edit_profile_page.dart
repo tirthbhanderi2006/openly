@@ -15,6 +15,7 @@ class EditProfilePage extends StatefulWidget {
 
 class _EditProfilePageState extends State<EditProfilePage> {
   final TextEditingController _bioTextController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
   String? _profilePicUrl;
   bool _isUpdating = false;
 
@@ -66,18 +67,23 @@ class _EditProfilePageState extends State<EditProfilePage> {
       final String? userId = FirebaseAuth.instance.currentUser?.uid;
       if (userId == null) throw Exception("No user is currently signed in.");
 
-      await FirebaseFirestore.instance.collection('users').doc(userId).update({
-        'bio': _bioTextController.text.trim(),
-        if (_profilePicUrl != null) 'profilePic': _profilePicUrl,
-      });
+      if(_nameController.text.isNotEmpty) {
+        await FirebaseFirestore.instance.collection('users').doc(userId).update(
+            {
+              'bio': _bioTextController.text.trim(),
+              'name': _nameController.text.trim(),
+              if (_profilePicUrl != null) 'profilePic': _profilePicUrl,
+            });
 
-      setState(() => _isUpdating = false);
+        setState(() => _isUpdating = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Profile updated successfully!')),
+        );
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Profile updated successfully!')),
-      );
-
-      Navigator.pop(context);
+        Navigator.pop(context);
+      }else{
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("username can't be empty")));
+      }
     } catch (e) {
       setState(() => _isUpdating = false);
 
@@ -153,6 +159,11 @@ class _EditProfilePageState extends State<EditProfilePage> {
           _bioTextController.text = _bioTextController.text.isEmpty
               ? userDetails['bio'] ?? ''
               : _bioTextController.text;
+
+          _nameController.text = _nameController.text.isEmpty
+              ? userDetails['name'] ?? ''
+              : _nameController.text;
+
           _profilePicUrl ??= userDetails['profilePic'];
 
           return SingleChildScrollView(
@@ -187,6 +198,22 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       )
                           : null,
                     ),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    "Name",
+                    style: TextStyle(
+                      color: theme.primary,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  MyTextfield(
+                    hintText: "add your name",
+                    obscureText: false,
+                    controller: _nameController,
+                    focusNode: null, textColor: Theme.of(context).colorScheme.onBackground,
                   ),
                   const SizedBox(height: 20),
                   Text(
