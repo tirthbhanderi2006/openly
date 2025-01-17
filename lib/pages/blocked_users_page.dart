@@ -46,7 +46,7 @@ class BlockedUsersPage extends StatelessWidget {
           ChatServices().unblockUser(userId);
           Navigator.pop(context);
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('User Unblocked!')));
-        }, child: Text('Unblock user'))
+        }, child: Text('Unblock user',style: TextStyle(color: Colors.black,fontWeight: FontWeight.bold),))
       ],
     ),);
   }

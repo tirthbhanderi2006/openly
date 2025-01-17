@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:mithc_koko_chat_app/components/my_drawer.dart';
 import 'package:mithc_koko_chat_app/components/post_tile.dart';
@@ -116,39 +117,98 @@ class HomePage extends StatelessWidget {
     );
   }
 
+  Stream<List<DocumentSnapshot>> getFilteredPostsStream(String currentUserId) async* {
+    // Fetch the following list
+    List<dynamic> followingList = await getFollowingList(currentUserId);
+
+    // Listen to the posts collection
+    await for (var snapshot in FirebaseFirestore.instance
+        .collection('posts')
+        .orderBy('timeStamp', descending: true)
+        .snapshots()) {
+      // Filter the posts where the userId is in the following list
+      var filteredPosts = snapshot.docs.where((doc) {
+        var data = doc.data() as Map<String, dynamic>;
+        return followingList.contains(data['userId']); // Adjust 'userId' key if different
+      }).toList();
+
+      yield filteredPosts;
+    }
+  }
+  Future<List<dynamic>> getFollowingList(String userId) async {
+    try {
+      DocumentSnapshot snapshot = await FirebaseFirestore.instance.collection('users').doc(userId).get();
+      if (snapshot.exists) {
+        var userDetails = snapshot.data() as Map<String, dynamic>;
+        return userDetails["following"] ?? [];
+      } else {
+        return [];
+      }
+    } catch (e) {
+      print("Error: $e");
+      return [];
+    }
+  }
+
   Widget _buildAllPosts(){
-    return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection('posts') // Your Firestore collection name
-          .orderBy('timeStamp', descending: true) // Optional: order posts by timestamp
-          .snapshots(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
+    return FutureBuilder<List<dynamic>>(
+      future: getFollowingList(FirebaseAuth.instance.currentUser!.uid), // Replace with your method to get the current user ID
+      builder: (context, followingSnapshot) {
+        if (followingSnapshot.connectionState == ConnectionState.waiting) {
           return Center(child: CircularProgressIndicator());
         }
 
-        if (snapshot.hasError) {
-          return Center(child: Text('Something went wrong!'));
+        if (followingSnapshot.hasError) {
+          return Center(child: Text('Error loading following list!'));
         }
 
-        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return _buildUsersList();
+        if (!followingSnapshot.hasData || followingSnapshot.data!.isEmpty) {
+          return Center(child: Text('You are not following anyone.'));
         }
 
-        // Map Firestore document data to PostModel
-        List<PostModel> posts = snapshot.data!.docs.map((doc) {
-          return PostModel.fromJson(doc.data() as Map<String, dynamic>);
-        }).toList();
-        print(posts);
+        List<dynamic> followingList = followingSnapshot.data!;
 
-        return ListView.builder(
-          itemCount: posts.length,
-          itemBuilder: (context, index) {
-            // Display the posts using your PostTile widget
-            return PostTile(model: posts[index]);
+        return StreamBuilder<QuerySnapshot>(
+          stream: FirebaseFirestore.instance
+              .collection('posts')
+              .orderBy('timeStamp', descending: true)
+              .snapshots(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(child: CircularProgressIndicator());
+            }
+
+            if (snapshot.hasError) {
+              return Center(child: Text('Something went wrong!'));
+            }
+
+            if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+              return Center(child: Text('No posts found.'));
+            }
+
+            // Filter posts based on the following list
+            List<PostModel> posts = snapshot.data!.docs
+                .where((doc) {
+              var data = doc.data() as Map<String, dynamic>;
+              return followingList.contains(data['userId']); // Ensure userId matches your Firestore field
+            })
+                .map((doc) => PostModel.fromJson(doc.data() as Map<String, dynamic>))
+                .toList();
+
+            if (posts.isEmpty) {
+              return Center(child: Text('No posts from followed users.'));
+            }
+
+            return ListView.builder(
+              itemCount: posts.length,
+              itemBuilder: (context, index) {
+                return PostTile(model: posts[index]);
+              },
+            );
           },
         );
       },
     );
+
   }
 }

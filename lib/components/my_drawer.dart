@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:mithc_koko_chat_app/page_transition/slide_right_page_transition.dart';
 import 'package:mithc_koko_chat_app/pages/profile_page.dart';
+import 'package:mithc_koko_chat_app/pages/search_page.dart';
 import 'package:mithc_koko_chat_app/services/auth_services.dart';
 import 'package:mithc_koko_chat_app/pages/setting_page.dart';
 import 'package:provider/provider.dart'; // Ensure Provider is used for ThemeProvider
@@ -62,6 +63,21 @@ class MyDrawer extends StatelessWidget {
             label: 'H O M E',
             onTap: () {
               Navigator.pop(context); // Close drawer
+            },
+            isDark: isDark,
+          ),
+
+          // Settings option
+          _buildDrawerItem(
+            context,
+            icon: Icons.search,
+            label: 'S E A R C H',
+            onTap: () {
+              Navigator.pop(context); // Close drawer
+              Navigator.push(
+                  context,
+                  SlideRightPageTransition(child: SearchPage())
+              );
             },
             isDark: isDark,
           ),
