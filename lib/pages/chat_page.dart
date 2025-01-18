@@ -127,7 +127,6 @@ class _ChatPageState extends State<ChatPage> {
 void startVideoCall(BuildContext context, String currentUserId, String receiverId) async {
   // Generate a unique call ID
   String callID = generateCallID(currentUserId, receiverId);
-
   // Save call details to Firestore
   await FirebaseFirestore.instance.collection('video_calls').doc(callID).set({
     'callID': callID,
@@ -136,15 +135,14 @@ void startVideoCall(BuildContext context, String currentUserId, String receiverI
     'startTime': FieldValue.serverTimestamp(),
     'status': 'ongoing', // You can update this when the call ends
   });
-
   // Navigate to the video call screen
   Navigator.push(
     context,
     MaterialPageRoute(
       builder: (context) => ZegoUIKitPrebuiltCall(
-        appID: 482616865, // Replace with your ZEGOCLOUD App ID
+        appID: 482616865, //app ID
         appSign:
-            "69c2940bbaac4ae2e8d94ffc1343fde1fed742133c9cfb9eedef243e6912e5c1", // Replace with your ZEGOCLOUD App Sign
+            "69c2940bbaac4ae2e8d94ffc1343fde1fed742133c9cfb9eedef243e6912e5c1", //app sign
         userID: currentUserId,
         userName: FirebaseAuth.instance.currentUser!.email.toString(),
         callID: callID,
@@ -196,7 +194,7 @@ void listenForIncomingCalls(BuildContext context, String currentUserId) {
                     .update({'status': 'rejected'});
                 Navigator.of(context).pop();
               },
-              child: const Text('Reject'),
+              child: const Text('Reject',style: TextStyle(color: Colors.red),),
             ),
             TextButton(
               onPressed: () {
@@ -204,20 +202,23 @@ void listenForIncomingCalls(BuildContext context, String currentUserId) {
                 Navigator.of(context).pop(); // Close the dialog
                 Navigator.push(
                   context,
+                  //here the video screen is launching
                   MaterialPageRoute(
                     builder: (context) => ZegoUIKitPrebuiltCall(
-                      appID: 482616865, // Your ZEGOCLOUD App ID
+                      appID: 482616865, //app id
                       appSign:
-                      "69c2940bbaac4ae2e8d94ffc1343fde1fed742133c9cfb9eedef243e6912e5c1", // Your ZEGOCLOUD App Sign
+                      "69c2940bbaac4ae2e8d94ffc1343fde1fed742133c9cfb9eedef243e6912e5c1", //app sign
                       userID: callData['receiverID'],
                       userName: FirebaseAuth.instance.currentUser!.email.toString(),
                       callID: callData['callID'],
                       config: ZegoUIKitPrebuiltCallConfig.oneOnOneVideoCall(),
+                      events: ZegoUIKitPrebuiltCallEvents(
+                      ),
                     ),
                   ),
                 );
               },
-              child: const Text('Accept'),
+              child: const Text('Accept',style: TextStyle(color: Colors.green),),
             ),
           ],
         );
