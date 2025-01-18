@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:image_picker/image_picker.dart';
-
+import 'package:zego_uikit_prebuilt_call/zego_uikit_prebuilt_call.dart';
 import '../components/chat_bubble.dart';
 import '../components/my_textfield.dart';
 import '../services/chat_services.dart';
@@ -30,17 +30,17 @@ class _ChatPageState extends State<ChatPage> {
   void initState() {
     super.initState();
     userDetailsFuture = getUserDetails(widget.receiverId);
-
+    listenForIncomingCalls(context, FirebaseAuth.instance.currentUser!.uid);
     node.addListener(() {
       if (node.hasFocus) {
-        Future.delayed(const Duration(milliseconds: 500), () => scrollToBottom());
+        Future.delayed(
+            const Duration(milliseconds: 500), () => scrollToBottom());
       }
     });
   }
 
   @override
   void dispose() {
-    _messageController.dispose();
     node.dispose();
     super.dispose();
   }
@@ -55,8 +55,10 @@ class _ChatPageState extends State<ChatPage> {
 
   Future<Map<String, dynamic>> getUserDetails(String userId) async {
     try {
-      DocumentSnapshot snapshot =
-      await FirebaseFirestore.instance.collection("users").doc(userId).get();
+      DocumentSnapshot snapshot = await FirebaseFirestore.instance
+          .collection("users")
+          .doc(userId)
+          .get();
       if (snapshot.exists) {
         return snapshot.data() as Map<String, dynamic>;
       } else {
@@ -67,6 +69,7 @@ class _ChatPageState extends State<ChatPage> {
       return {};
     }
   }
+
   Future<void> sendMessage(BuildContext context, {String? imageUrl}) async {
     if (_messageController.text.trim().isEmpty && imageUrl == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -101,7 +104,8 @@ class _ChatPageState extends State<ChatPage> {
         );
 
         String fileName = DateTime.now().millisecondsSinceEpoch.toString();
-        Reference storageRef = FirebaseStorage.instance.ref().child('chat_images/$fileName');
+        Reference storageRef =
+            FirebaseStorage.instance.ref().child('chat_images/$fileName');
         await storageRef.putFile(File(image.path));
         String imageUrl = await storageRef.getDownloadURL();
 
@@ -118,6 +122,108 @@ class _ChatPageState extends State<ChatPage> {
     }
   }
 
+
+  // for video call
+void startVideoCall(BuildContext context, String currentUserId, String receiverId) async {
+  // Generate a unique call ID
+  String callID = generateCallID(currentUserId, receiverId);
+
+  // Save call details to Firestore
+  await FirebaseFirestore.instance.collection('video_calls').doc(callID).set({
+    'callID': callID,
+    'callerID': currentUserId,
+    'receiverID': receiverId,
+    'startTime': FieldValue.serverTimestamp(),
+    'status': 'ongoing', // You can update this when the call ends
+  });
+
+  // Navigate to the video call screen
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => ZegoUIKitPrebuiltCall(
+        appID: 482616865, // Replace with your ZEGOCLOUD App ID
+        appSign:
+            "69c2940bbaac4ae2e8d94ffc1343fde1fed742133c9cfb9eedef243e6912e5c1", // Replace with your ZEGOCLOUD App Sign
+        userID: currentUserId,
+        userName: FirebaseAuth.instance.currentUser!.email.toString(),
+        callID: callID,
+        config: ZegoUIKitPrebuiltCallConfig.oneOnOneVideoCall(),
+      ),
+    ),
+  );
+}
+
+String generateCallID(String currentUserId, String receiverId) {
+  // Use a consistent format for call ID (e.g., sorted alphabetically for uniqueness)
+  return currentUserId.compareTo(receiverId) < 0
+      ? '$currentUserId-$receiverId'
+      : '$receiverId-$currentUserId';
+}
+
+void listenForIncomingCalls(BuildContext context, String currentUserId) {
+    FirebaseFirestore.instance
+        .collection('video_calls')
+        .where('receiverID', isEqualTo: currentUserId)
+        .where('status', isEqualTo: 'ongoing')
+        .snapshots()
+        .listen((querySnapshot) {
+      for (var docChange in querySnapshot.docChanges) {
+        if (docChange.type == DocumentChangeType.added) {
+          // New incoming call detected
+          var callData = docChange.doc.data();
+          showIncomingCallDialog(context, callData!);
+        }
+      }
+    });
+  }
+
+  void showIncomingCallDialog(BuildContext context, Map<String, dynamic> callData) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Incoming Call'),
+          content: Text('You have an incoming call from ${widget.receiverEmail}'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                // Reject the call
+                FirebaseFirestore.instance
+                    .collection('video_calls')
+                    .doc(callData['callID'])
+                    .update({'status': 'rejected'});
+                Navigator.of(context).pop();
+              },
+              child: const Text('Reject'),
+            ),
+            TextButton(
+              onPressed: () {
+                // Accept the call
+                Navigator.of(context).pop(); // Close the dialog
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ZegoUIKitPrebuiltCall(
+                      appID: 482616865, // Your ZEGOCLOUD App ID
+                      appSign:
+                      "69c2940bbaac4ae2e8d94ffc1343fde1fed742133c9cfb9eedef243e6912e5c1", // Your ZEGOCLOUD App Sign
+                      userID: callData['receiverID'],
+                      userName: FirebaseAuth.instance.currentUser!.email.toString(),
+                      callID: callData['callID'],
+                      config: ZegoUIKitPrebuiltCallConfig.oneOnOneVideoCall(),
+                    ),
+                  ),
+                );
+              },
+              child: const Text('Accept'),
+            ),
+          ],
+        );
+      },
+    );
+  }
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -153,12 +259,21 @@ class _ChatPageState extends State<ChatPage> {
             ),
           );
         }
-
         Map<String, dynamic> userMap = snapshot.data!;
 
         return Scaffold(
           backgroundColor: theme.colorScheme.background,
           appBar: AppBar(
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.videocam),
+                onPressed: () { startVideoCall(context, FirebaseAuth.instance.currentUser!.uid, widget.receiverId); },
+              ),
+              IconButton(
+                icon: const Icon(Icons.more_vert),
+                onPressed: () {},
+              ),
+            ],
             automaticallyImplyLeading: true,
             leading: Padding(
               padding: const EdgeInsets.all(8.0), // Reduced padding
@@ -209,7 +324,7 @@ class _ChatPageState extends State<ChatPage> {
         return ListView(
           controller: scrollController,
           children:
-          snapshot.data!.docs.map((doc) => _buildMessageItem(doc)).toList(),
+              snapshot.data!.docs.map((doc) => _buildMessageItem(doc)).toList(),
         );
       },
     );
@@ -217,10 +332,12 @@ class _ChatPageState extends State<ChatPage> {
 
   Widget _buildMessageItem(DocumentSnapshot doc) {
     Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-    bool isCurrentUser = data['senderId'] == FirebaseAuth.instance.currentUser!.uid;
+    bool isCurrentUser =
+        data['senderId'] == FirebaseAuth.instance.currentUser!.uid;
 
     return Column(
-      crossAxisAlignment: isCurrentUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+      crossAxisAlignment:
+          isCurrentUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
       children: [
         ChatBubble(
           message: data['message'],
@@ -245,7 +362,8 @@ class _ChatPageState extends State<ChatPage> {
               obscureText: false,
               controller: _messageController,
               focusNode: node,
-              hintStyle: TextStyle(color: theme.colorScheme.onBackground.withOpacity(0.5)),
+              hintStyle: TextStyle(
+                  color: theme.colorScheme.onBackground.withOpacity(0.5)),
               fillColor: theme.colorScheme.surfaceVariant,
               textColor: theme.colorScheme.onBackground,
             ),
@@ -268,7 +386,8 @@ class _ChatPageState extends State<ChatPage> {
             ),
             child: IconButton(
               onPressed: () => sendMessage(context),
-              icon: const Icon(Icons.arrow_upward_outlined, color: Colors.white),
+              icon:
+                  const Icon(Icons.arrow_upward_outlined, color: Colors.white),
             ),
           ),
         ],
@@ -276,4 +395,3 @@ class _ChatPageState extends State<ChatPage> {
     );
   }
 }
-

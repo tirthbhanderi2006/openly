@@ -1,17 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get_rx/src/rx_typedefs/rx_typedefs.dart';
 import 'package:mithc_koko_chat_app/components/my_textfield.dart';
+import 'package:mithc_koko_chat_app/components/post_header_widget.dart';
 import 'package:mithc_koko_chat_app/model/comments_model.dart';
-import 'package:mithc_koko_chat_app/page_transition/slide_up_page_transition.dart';
-import 'package:mithc_koko_chat_app/pages/profile_page.dart';
-import 'package:mithc_koko_chat_app/services/chat_services.dart';
 import 'package:mithc_koko_chat_app/services/post_services.dart';
 import 'package:mithc_koko_chat_app/themes/theme_provider.dart';
 import '../model/post_model.dart';
-import 'post_header_widget.dart';
 
 class PostTile extends StatefulWidget {
   final PostModel model;
@@ -44,7 +39,6 @@ class _PostTileState extends State<PostTile> with SingleTickerProviderStateMixin
         });
       }
     });
-
     _animation = Tween<double>(begin: 0.5, end: 1)
         .chain(CurveTween(curve: Curves.fastLinearToSlowEaseIn))
         .animate(_controller);
@@ -290,6 +284,7 @@ class _PostTileState extends State<PostTile> with SingleTickerProviderStateMixin
     );
   }
 
+
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
@@ -403,8 +398,7 @@ class _PostTileState extends State<PostTile> with SingleTickerProviderStateMixin
                       ),
                     ),
                   Text(
-                    // '${comment.timeStamp.toLocal()}'.split(' ')[0],
-                    'Posted on ${'${widget.model.timeStamp.toLocal()}'.split(' ')[0]}',
+                    'Posted on ${widget.model.timeStamp}',
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ],
@@ -416,6 +410,11 @@ class _PostTileState extends State<PostTile> with SingleTickerProviderStateMixin
     );
 
   }
+
+
+
+
+
   // Function to get the current user's profile picture URL
   Future<String> getCurrentUserImage(String userId) async {
     try {
