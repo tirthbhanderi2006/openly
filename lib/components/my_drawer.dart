@@ -33,7 +33,7 @@ class MyDrawer extends StatelessWidget {
                   Image.asset('lib/assets/telegram.png',width: 90,),
                   const SizedBox(height: 10),
                   Text(
-                    "Let`s Chat",
+                    "OPENLY",
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,

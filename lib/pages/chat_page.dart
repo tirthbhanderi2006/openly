@@ -14,7 +14,7 @@ class ChatPage extends StatefulWidget {
   final String receiverEmail;
   final String receiverId;
 
-  ChatPage({super.key, required this.receiverEmail, required this.receiverId});
+  const ChatPage({super.key, required this.receiverEmail, required this.receiverId});
 
   @override
   State<ChatPage> createState() => _ChatPageState();
@@ -191,7 +191,7 @@ void listenForIncomingCalls(BuildContext context, String currentUserId) {
                 FirebaseFirestore.instance
                     .collection('video_calls')
                     .doc(callData['callID'])
-                    .update({'status': 'rejected'});
+                    .set({'status': 'rejected'});
                 Navigator.of(context).pop();
               },
               child: const Text('Reject',style: TextStyle(color: Colors.red),),
@@ -213,6 +213,13 @@ void listenForIncomingCalls(BuildContext context, String currentUserId) {
                       callID: callData['callID'],
                       config: ZegoUIKitPrebuiltCallConfig.oneOnOneVideoCall(),
                       events: ZegoUIKitPrebuiltCallEvents(
+                        onCallEnd: (event, defaultAction) {
+                          Navigator.pop(context);
+                          FirebaseFirestore.instance
+                              .collection('video_calls')
+                              .doc(callData['callID'])
+                              .delete();
+                        },
                       ),
                     ),
                   ),
