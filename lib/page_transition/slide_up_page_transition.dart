@@ -6,8 +6,8 @@ class SlideUpNavigationAnimation extends PageRouteBuilder {
   SlideUpNavigationAnimation({
     required this.child,
   }) : super(
-    transitionDuration: Duration(milliseconds: 800),
-    reverseTransitionDuration: Duration(milliseconds: 800),
+    transitionDuration: Duration(milliseconds: 500),
+    reverseTransitionDuration: Duration(milliseconds: 500),
     pageBuilder: (context, animation, secondaryAnimation) {
       return child;
     },
