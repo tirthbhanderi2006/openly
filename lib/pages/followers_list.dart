@@ -17,8 +17,8 @@ class FollowersList extends StatelessWidget {
           appBar: AppBar(
             bottom: const TabBar(
               tabs: [
-                Tab(text: "Followers"),
                 Tab(text: "Following"),
+                Tab(text: "Followers"),
               ],
             ),
           ),
@@ -67,7 +67,18 @@ class FollowersList extends StatelessWidget {
                 ),
                 title: Text(userData['name']),
                 subtitle: Text(userData['email']),
-                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => ProfilePage(userId: userData['uid']),)),
+                //this is causing a bug
+                onTap: ()
+                {
+                  print(userData['uid']);
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            ProfilePage(userId: userData['uid']),
+                      )
+                  );
+                },
               );
             },
           );

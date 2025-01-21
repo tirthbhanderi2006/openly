@@ -10,17 +10,49 @@ import 'package:mithc_koko_chat_app/pages/chat_page.dart';
 import 'package:mithc_koko_chat_app/pages/followers_list.dart';
 import 'package:mithc_koko_chat_app/services/post_services.dart';
 import '../controllers/profile_controller.dart';
+import '../main.dart';
 import '../model/post_model.dart';
 import 'edit_profile_page.dart';
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget{
   final String userId;
+
+  ProfilePage({super.key, required this.userId});
+
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage>with RouteAware {
   final ProfileController profileController = Get.put(ProfileController());
 
-  ProfilePage({super.key, required this.userId}) {
-    profileController.fetchUserDetails(userId);
-    profileController.fetchUserPosts(userId);
+  @override
+  void initState() {
+      profileController.fetchUserDetails(widget.userId);
+      profileController.fetchUserPosts(widget.userId);
+    super.initState();
   }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final ModalRoute? modalRoute = ModalRoute.of(context);
+    if (modalRoute is PageRoute) {
+      routeObserver.subscribe(this, modalRoute); // Subscribe to the RouteObserver
+    }
+  }
+  @override
+  void dispose() {
+    routeObserver.unsubscribe(this); // Unsubscribe from RouteObserver
+    super.dispose();
+  }
+  @override
+  void didPopNext() {
+    profileController.fetchUserDetails(widget.userId);
+    profileController.fetchUserPosts(widget.userId);
+    super.didPopNext();
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +60,7 @@ class ProfilePage extends StatelessWidget {
       backgroundColor: Theme.of(context).colorScheme.background,
       appBar: AppBar(
         actions: [
-          if (userId == FirebaseAuth.instance.currentUser!.uid)
+          if (widget.userId == FirebaseAuth.instance.currentUser!.uid)
             IconButton(
               onPressed: () => Navigator.push(
                 context,
@@ -73,16 +105,16 @@ class ProfilePage extends StatelessWidget {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       image: userDetails['profilePic'] != null &&
-                              userDetails['profilePic']!.isNotEmpty
+                          userDetails['profilePic']!.isNotEmpty
                           ? DecorationImage(
-                              image: NetworkImage(userDetails['profilePic']),
-                              fit: BoxFit.cover,
-                            )
+                        image: NetworkImage(userDetails['profilePic']),
+                        fit: BoxFit.cover,
+                      )
                           : const DecorationImage(
-                              image: NetworkImage(
-                                  'https://www.gravatar.com/avatar/?d=identicon'),
-                              fit: BoxFit.cover,
-                            ),
+                        image: NetworkImage(
+                            'https://www.gravatar.com/avatar/?d=identicon'),
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   ),
                   Padding(
@@ -95,30 +127,30 @@ class ProfilePage extends StatelessWidget {
                         Column(
                           children: [
                             Obx(() => GestureDetector(
-                                  onTap: () {
-                                    Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => FollowersList(
-                                              following: List<String>.from(
-                                                  userDetails['followers'] ??
-                                                      []),
-                                              followers: List<String>.from(
-                                                      userDetails[
-                                                          'following']) ??
+                              onTap: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => FollowersList(
+                                          following: List<String>.from(
+                                              userDetails['following'] ??
                                                   []),
-                                        ));
-                                  },
-                                  child: Text(
-                                    "${profileController.followersCount}",
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color:
-                                          Theme.of(context).colorScheme.primary,
-                                    ),
-                                  ),
-                                )),
+                                          followers: List<String>.from(
+                                              userDetails[
+                                              'followers']) ??
+                                              []),
+                                    ));
+                              },
+                              child: Text(
+                                "${profileController.followersCount}",
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color:
+                                  Theme.of(context).colorScheme.primary,
+                                ),
+                              ),
+                            )),
                             const SizedBox(height: 5),
                             Text(
                               "Followers",
@@ -135,14 +167,14 @@ class ProfilePage extends StatelessWidget {
                         Column(
                           children: [
                             Obx(() => Text(
-                                  "${profileController.followingCount}",
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color:
-                                        Theme.of(context).colorScheme.primary,
-                                  ),
-                                )),
+                              "${profileController.followingCount}",
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color:
+                                Theme.of(context).colorScheme.primary,
+                              ),
+                            )),
                             const SizedBox(height: 5),
                             Text(
                               "Following",
@@ -159,14 +191,14 @@ class ProfilePage extends StatelessWidget {
                         Column(
                           children: [
                             Obx(() => Text(
-                                  "${profileController.posts.length}",
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color:
-                                        Theme.of(context).colorScheme.primary,
-                                  ),
-                                )),
+                              "${profileController.posts.length}",
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color:
+                                Theme.of(context).colorScheme.primary,
+                              ),
+                            )),
                             const SizedBox(height: 5),
                             Text(
                               "Posts",
@@ -187,7 +219,7 @@ class ProfilePage extends StatelessWidget {
                     children: [
                       // FollowButton(onPress: (){},text: "Follow",),
                       Expanded(
-                        child: FirebaseAuth.instance.currentUser!.uid != userId
+                        child: FirebaseAuth.instance.currentUser!.uid != widget.userId
                             ? Obx(() {
                           final isFollowing = (profileController.userDetails['followers'] ?? [])
                               .contains(FirebaseAuth.instance.currentUser!.uid);
@@ -202,7 +234,7 @@ class ProfilePage extends StatelessWidget {
                                   onPressed: () {
                                     profileController.toggleFollow(
                                       FirebaseAuth.instance.currentUser!.uid,
-                                      userId,
+                                      widget.userId,
                                     );
                                   },
                                   style: ElevatedButton.styleFrom(
@@ -249,7 +281,7 @@ class ProfilePage extends StatelessWidget {
                   ),
                   // Divider(),
                   const SizedBox(height: 25),
-                // Divider(),
+                  // Divider(),
                   Padding(
                     padding: const EdgeInsets.only(left: 8.0),
                     child: Row(
@@ -313,7 +345,7 @@ class ProfilePage extends StatelessWidget {
                   child: Text(
                     "No posts available",
                     style:
-                        TextStyle(color: Theme.of(context).colorScheme.primary),
+                    TextStyle(color: Theme.of(context).colorScheme.primary),
                   ),
                 );
               }
@@ -391,7 +423,7 @@ class ProfilePage extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 20),
-                      if (userId == FirebaseAuth.instance.currentUser!.uid)
+                      if (widget.userId == FirebaseAuth.instance.currentUser!.uid)
                         Row(
                           children: [
                             TextButton(

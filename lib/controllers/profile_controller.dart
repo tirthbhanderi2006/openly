@@ -40,7 +40,11 @@ class ProfileController extends GetxController {
     super.onClose();
   }
 
-
+  //to refresh the profile page
+  void refreshProfile(String userId) {
+    fetchUserDetails(userId);
+    fetchUserPosts(userId);
+  }
 
   void fetchUserPosts(String userId) {
     // Fetch posts specific to the profile owner
