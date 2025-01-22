@@ -17,7 +17,7 @@ import 'edit_profile_page.dart';
 class ProfilePage extends StatefulWidget{
   final String userId;
 
-  ProfilePage({super.key, required this.userId});
+  const ProfilePage({super.key, required this.userId});
 
   @override
   State<ProfilePage> createState() => _ProfilePageState();
@@ -30,7 +30,7 @@ class _ProfilePageState extends State<ProfilePage>with RouteAware {
   void initState() {
       profileController.fetchUserDetails(widget.userId);
       profileController.fetchUserPosts(widget.userId);
-    super.initState();
+      super.initState();
   }
 
   @override

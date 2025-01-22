@@ -122,7 +122,7 @@ class ChatBubble extends StatelessWidget {
               bottomLeft: const Radius.circular(12),
               bottomRight: const Radius.circular(12),
             ),
-            color: isCurrentUser ? Colors.greenAccent.shade700 : Colors.grey.shade800,
+            color: isCurrentUser ? Color(0xFFC0BDB8) : Color(0xFF7A7B7A),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.1),
@@ -139,28 +139,32 @@ class ChatBubble extends StatelessWidget {
               if (imageUrl != null && imageUrl!.isNotEmpty)
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8),
-                  child: Image.network(
-                    imageUrl!,
+                  // ignore: sized_box_for_whitespace
+                  child: Container(
                     height: 200,
-                    // width: 200,
-                    fit: BoxFit.cover,
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) {
-                        return child;
-                      } else {
-                        return Center(
-                          child: CircularProgressIndicator(
-                            value: loadingProgress.expectedTotalBytes != null
-                                ? loadingProgress.cumulativeBytesLoaded /
-                                (loadingProgress.expectedTotalBytes ?? 1)
-                                : null,
-                          ),
-                        );
-                      }
-                    },
-                    errorBuilder: (context, error, stackTrace) {
-                      return const Icon(Icons.broken_image, color: Colors.red, size: 100);
-                    },
+                    child: Image.network(
+                      imageUrl!,
+                      height: 200,
+                      // width: 200,
+                      fit: BoxFit.cover,
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) {
+                          return child;
+                        } else {
+                          return Center(
+                            child: CircularProgressIndicator(
+                              value: loadingProgress.expectedTotalBytes != null
+                                  ? loadingProgress.cumulativeBytesLoaded /
+                                  (loadingProgress.expectedTotalBytes ?? 1)
+                                  : null,
+                            ),
+                          );
+                        }
+                      },
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Icon(Icons.broken_image, color: Colors.red, size: 100);
+                      },
+                    ),
                   ),
                 ),
               // If imageUrl is null, show the message text

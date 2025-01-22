@@ -326,11 +326,29 @@ class _PostTileState extends State<PostTile> with SingleTickerProviderStateMixin
                       topLeft: Radius.circular(15),
                       topRight: Radius.circular(15),
                     ),
-                    child: Image.network(
-                      widget.model.imgUrl,
-                      fit: BoxFit.cover,
+                    // ignore: sized_box_for_whitespace
+                    child: Container(
                       height: 300,
-                      width: double.infinity,
+                      child: Image.network(
+                        widget.model.imgUrl,
+                        fit: BoxFit.cover,
+                        height: 300,
+                        width: double.infinity,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) {
+                            return child;
+                          } else {
+                            return Center(
+                              child: CircularProgressIndicator(
+                                value: loadingProgress.expectedTotalBytes != null
+                                    ? loadingProgress.cumulativeBytesLoaded /
+                                    (loadingProgress.expectedTotalBytes ?? 1)
+                                    : null,
+                              ),
+                            );
+                          }
+                        },
+                      ),
                     ),
                   ),
                   if (showHeart)

@@ -21,13 +21,14 @@ class ChatPage extends StatefulWidget {
 }
 
 class _ChatPageState extends State<ChatPage> {
+
   final FocusNode node = FocusNode();
   final TextEditingController _messageController = TextEditingController();
   final ScrollController scrollController = ScrollController();
   late Future<Map<String, dynamic>> userDetailsFuture;
 
-  @override
-  void initState() {
+@override
+void initState() {
     super.initState();
     userDetailsFuture = getUserDetails(widget.receiverId);
     listenForIncomingCalls(context, FirebaseAuth.instance.currentUser!.uid);
@@ -37,15 +38,15 @@ class _ChatPageState extends State<ChatPage> {
             const Duration(milliseconds: 500), () => scrollToBottom());
       }
     });
-  }
+}
 
-  @override
-  void dispose() {
+@override
+void dispose() {
     node.dispose();
     super.dispose();
-  }
+}
 
-  void scrollToBottom() {
+void scrollToBottom() {
     scrollController.animateTo(
       scrollController.position.maxScrollExtent,
       duration: const Duration(seconds: 1),
@@ -53,7 +54,9 @@ class _ChatPageState extends State<ChatPage> {
     );
   }
 
-  Future<Map<String, dynamic>> getUserDetails(String userId) async {
+
+//   for sending messages
+Future<Map<String, dynamic>> getUserDetails(String userId) async {
     try {
       DocumentSnapshot snapshot = await FirebaseFirestore.instance
           .collection("users")
@@ -70,7 +73,7 @@ class _ChatPageState extends State<ChatPage> {
     }
   }
 
-  Future<void> sendMessage(BuildContext context, {String? imageUrl}) async {
+Future<void> sendMessage(BuildContext context, {String? imageUrl}) async {
     if (_messageController.text.trim().isEmpty && imageUrl == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('You cannot send an empty message')),
@@ -93,7 +96,7 @@ class _ChatPageState extends State<ChatPage> {
     }
   }
 
-  Future<void> pickAndSendImage() async {
+Future<void> pickAndSendImage() async {
     final ImagePicker picker = ImagePicker();
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
 
@@ -122,7 +125,6 @@ class _ChatPageState extends State<ChatPage> {
     }
   }
 
-
   // for video call
 void startVideoCall(BuildContext context, String currentUserId, String receiverId) async {
   // Generate a unique call ID
@@ -146,7 +148,7 @@ void startVideoCall(BuildContext context, String currentUserId, String receiverI
         userID: currentUserId,
         userName: FirebaseAuth.instance.currentUser!.email.toString(),
         callID: callID,
-        config: ZegoUIKitPrebuiltCallConfig.oneOnOneVideoCall(),
+        config: ZegoUIKitPrebuiltCallConfig.oneOnOneVideoCall()..useSpeakerWhenJoining=true,
       ),
     ),
   );
@@ -176,7 +178,7 @@ void listenForIncomingCalls(BuildContext context, String currentUserId) {
     });
   }
 
-  void showIncomingCallDialog(BuildContext context, Map<String, dynamic> callData) {
+void showIncomingCallDialog(BuildContext context, Map<String, dynamic> callData) {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -211,7 +213,8 @@ void listenForIncomingCalls(BuildContext context, String currentUserId) {
                       userID: callData['receiverID'],
                       userName: FirebaseAuth.instance.currentUser!.email.toString(),
                       callID: callData['callID'],
-                      config: ZegoUIKitPrebuiltCallConfig.oneOnOneVideoCall(),
+                      config: ZegoUIKitPrebuiltCallConfig.oneOnOneVideoCall()
+                              ..useSpeakerWhenJoining=true,
                       events: ZegoUIKitPrebuiltCallEvents(
                         onCallEnd: (event, defaultAction) {
                           Navigator.pop(context);
@@ -232,6 +235,9 @@ void listenForIncomingCalls(BuildContext context, String currentUserId) {
       },
     );
   }
+
+
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -302,7 +308,7 @@ void listenForIncomingCalls(BuildContext context, String currentUserId) {
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
             ),
             centerTitle: false,
-            titleSpacing: 0,
+            titleSpacing: 2,
             backgroundColor: theme.colorScheme.primary,
             foregroundColor: Colors.white,
             elevation: 0,
@@ -372,8 +378,8 @@ void listenForIncomingCalls(BuildContext context, String currentUserId) {
               focusNode: node,
               hintStyle: TextStyle(
                   color: theme.colorScheme.onBackground.withOpacity(0.5)),
-              fillColor: theme.colorScheme.surfaceVariant,
-              textColor: theme.colorScheme.onBackground,
+                  fillColor: theme.colorScheme.surfaceVariant,
+                  textColor: theme.colorScheme.onBackground,
             ),
           ),
           Container(
