@@ -18,6 +18,7 @@ class CreatePostPage extends StatefulWidget {
 
 class _CreatePostPageState extends State<CreatePostPage> {
   TextEditingController _captionController = TextEditingController();
+  bool isLoading=false;
   File? _imageFile;
 
   @override
@@ -45,44 +46,59 @@ class _CreatePostPageState extends State<CreatePostPage> {
           style: TextStyle(color: theme.primary),
         ),
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Column(
-            children: [
-              if (_imageFile != null)
-                ClipRRect(
-                  borderRadius: const BorderRadius.all(Radius.circular(20)),
-                  child: Image.file(
-                    _imageFile!,
-                    fit: BoxFit.cover,
-                    height: 420,
-                    width: 350,
+      body: Stack(
+        children: [
+          // Main content of the page
+          SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Column(
+                children: [
+                  if (_imageFile != null)
+                    ClipRRect(
+                      borderRadius: const BorderRadius.all(Radius.circular(20)),
+                      child: Image.file(
+                        _imageFile!,
+                        fit: BoxFit.cover,
+                        height: 420,
+                        width: 350,
+                      ),
+                    ), // Display the selected image
+                  const SizedBox(height: 10),
+                  ElevatedButton.icon(
+                    onPressed: _pickImage,
+                    icon: Icon(Icons.upload_file_outlined, color: theme.onPrimary),
+                    label: Text(
+                      "Select Image",
+                      style: TextStyle(color: theme.onPrimary),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: theme.primary,
+                    ),
                   ),
-                ), // Display the selected image
-              const SizedBox(height: 10),
-              ElevatedButton.icon(
-                onPressed: _pickImage,
-                icon: Icon(Icons.upload_file_outlined, color: theme.onPrimary),
-                label: Text(
-                  "Select Image",
-                  style: TextStyle(color: theme.onPrimary),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: theme.primary,
-                ),
+                  const SizedBox(height: 10),
+                  MyTextfield(
+                    hintText: 'Enter caption for your post',
+                    obscureText: false,
+                    controller: _captionController,
+                    focusNode: null,
+                    textColor: theme.onBackground,
+                  ),
+                ],
               ),
-              const SizedBox(height: 10),
-              MyTextfield(
-                hintText: 'Enter caption for your post',
-                obscureText: false,
-                controller: _captionController,
-                focusNode: null,
-                textColor: theme.onBackground,
-              ),
-            ],
+            ),
           ),
-        ),
+          // Loading overlay
+          if (isLoading)
+            Container(
+              color: Colors.black.withOpacity(0.5), // Semi-transparent overlay
+              child: Center(
+                child: CircularProgressIndicator(
+                  color: theme.primary, // Spinner color
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -104,7 +120,9 @@ class _CreatePostPageState extends State<CreatePostPage> {
         );
         return;
       }
-
+      setState(() {
+        isLoading=true;
+      });
       final imgUrl = await StorageService().uploadImage(_imageFile!, "user_posts");
 
       PostModel model = PostModel(
@@ -125,9 +143,11 @@ class _CreatePostPageState extends State<CreatePostPage> {
       );
 
       setState(() {
+        isLoading=false;
         _imageFile = null;
         _captionController.clear();
       });
+      Navigator.pop(context);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Failed to upload post: $e")),
