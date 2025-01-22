@@ -1,10 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:mithc_koko_chat_app/page_transition/slide_up_page_transition.dart';
 import 'package:mithc_koko_chat_app/pages/profile_page.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 class FollowersList extends StatelessWidget {
-  List<String> followers;
-  List<String> following;
+  final List<String> followers;
+  final List<String> following;
 
   FollowersList({super.key, required this.following, required this.followers});
 
@@ -24,8 +26,8 @@ class FollowersList extends StatelessWidget {
           ),
           body: TabBarView(
             children: [
-              _buildUserList(following, "No followers yet", context),
-              _buildUserList(followers, "No following yet", context),
+              _buildUserList(following, "No following yet", context),
+              _buildUserList(followers, "No followers yet", context),
             ],
           ),
         ),
@@ -47,36 +49,41 @@ class FollowersList extends StatelessWidget {
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
+          // Show skeleton loader while waiting for data from the stream
+          return _buildSkeletonLoader();
         } else if (snapshot.hasError) {
           return Center(
             child: Text('Error: ${snapshot.error}'),
           );
         } else if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
-          // Extract user data
-          final users = snapshot.data!.docs;
-          return ListView.builder(
-            itemCount: users.length,
-            itemBuilder: (context, index) {
-              final userData = users[index].data() as Map<String, dynamic>;
-              return ListTile(
-                leading: CircleAvatar(
-                  backgroundImage: NetworkImage(userData['profilePic']),
-                ),
-                title: Text(userData['name']),
-                subtitle: Text(userData['email']),
-                //this is causing a bug
-                onTap: ()
-                {
-                  print(userData['uid']);
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            ProfilePage(userId: userData['uid']),
-                      )
+          return FutureBuilder(
+            future: Future.delayed(const Duration(milliseconds: 1500), () => snapshot.data!.docs),
+            builder: (context, futureSnapshot) {
+              if (futureSnapshot.connectionState == ConnectionState.waiting) {
+                // Show skeleton loader during delay
+                return _buildSkeletonLoader();
+              }
+
+              // Extract user data after the delay
+              final users = futureSnapshot.data!;
+              return ListView.builder(
+                itemCount: users.length,
+                itemBuilder: (context, index) {
+                  final userData = users[index].data() as Map<String, dynamic>;
+                  return ListTile(
+                    leading: CircleAvatar(
+                      backgroundImage: NetworkImage(userData['profilePic']),
+                    ),
+                    title: Text(userData['name']),
+                    subtitle: Text(userData['email']),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        SlideUpNavigationAnimation(
+                          child: ProfilePage(userId: userData['uid']),
+                        ),
+                      );
+                    },
                   );
                 },
               );
@@ -87,6 +94,29 @@ class FollowersList extends StatelessWidget {
             child: Text(emptyMessage),
           );
         }
+      },
+    );
+  }
+
+  // Skeleton Loader
+  Widget _buildSkeletonLoader() {
+    return ListView.builder(
+      itemCount: 5, // Number of skeleton tiles to show
+      itemBuilder: (context, index) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+          child: Skeletonizer(
+            enabled: true,
+            child: ListTile(
+              leading: CircleAvatar(
+                backgroundColor: Colors.grey[300],
+                radius: 25,
+              ),
+              title: Text("..............."),
+              subtitle:Text("...................................")
+            ),
+          ),
+        );
       },
     );
   }

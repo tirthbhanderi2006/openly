@@ -9,6 +9,7 @@ class SearchPageController extends GetxController {
     if (query.isEmpty) return;
 
     isLoading.value = true;
+    await Future.delayed(Duration(milliseconds: 1500));
 
     try {
       QuerySnapshot snapshot = await FirebaseFirestore.instance

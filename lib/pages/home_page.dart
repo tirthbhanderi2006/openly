@@ -24,20 +24,9 @@ class HomePage extends StatelessWidget {
       appBar: AppBar(
         actions: [
           IconButton(onPressed: ()=>Navigator.push(context, SlideLeftPageTransition(child: CreatePostPage())), icon: Icon(Icons.add_box_outlined)),
-          // Padding(
-          //   padding: const EdgeInsets.only(top: 6.0),
-          //   child: GestureDetector(
-          //     onTap: ()=>Navigator.push(context, MaterialPageRoute(builder: (context) => CreatePostPage())),
-          //     child: Image.asset("lib/assets/new-post.gif"),
-          //   ),
-          // ),
           Padding(
             padding: const EdgeInsets.only(right: 8.0,bottom: 5),
             child: IconButton(onPressed: ()=>Navigator.push(context, SlideLeftPageTransition(child: UsersPage())), icon: Icon(Icons.message)),
-              // child: GestureDetector(
-              //   onTap: ()=>Navigator.push(context, MaterialPageRoute(builder: (context) => UsersPage())),
-              //     child: Image.asset("lib/assets/direct.gif",width: 60,)
-              // ),
           )
         ],
         title: const Text("H O M E",style: TextStyle(fontWeight: FontWeight.bold),),
@@ -51,73 +40,7 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildUsersList() {
-    return StreamBuilder<List<Map<String, dynamic>>>(
-      stream: ChatServices().getUserStreamExcludingBlocked(),
-      builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          return Center(
-            child: Text("Error: ${snapshot.error}"),
-          );
-        }
-
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: CircularProgressIndicator(), // Improved loading indicator
-          );
-        }
-
-        // Check if snapshot has data
-        if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return const Center(
-            child: Text("No users found."),
-          );
-        }
-
-        // Build the user list
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Add a title
-            Padding(
-              padding: const EdgeInsets.all(18.0), // Adjust padding as needed
-              child: Text(
-                '''"Openly: Discover, Connect, Share."''',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ), // Use your desired style
-              ),
-            ),
-
-            // Add the ListView
-            Expanded( // Make sure ListView takes the available space
-              child: ListView(
-                children: snapshot.data!
-                    .map((userData) => _buildUsersListItem(userData, context))
-                    .toList(),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _buildUsersListItem(Map<String, dynamic> userData, BuildContext context) {
-    return UserTile(
-      userId: userData['uid'],
-      text: userData['email'],
-      imgUrl: userData['profilePic'],
-      onTap: () {
-        Navigator.push(
-          context,
-            SlideUpNavigationAnimation(child: ProfilePage(userId: userData['uid']))
-        );
-      },
-    );
-  }
-
-  Stream<List<DocumentSnapshot>> getFilteredPostsStream(String currentUserId) async* {
+Stream<List<DocumentSnapshot>> getFilteredPostsStream(String currentUserId) async* {
     // Fetch the following list
     List<dynamic> followingList = await getFollowingList(currentUserId);
 
@@ -135,7 +58,8 @@ class HomePage extends StatelessWidget {
       yield filteredPosts;
     }
   }
-  Future<List<dynamic>> getFollowingList(String userId) async {
+
+Future<List<dynamic>> getFollowingList(String userId) async {
     try {
       DocumentSnapshot snapshot = await FirebaseFirestore.instance.collection('users').doc(userId).get();
       if (snapshot.exists) {
@@ -150,7 +74,7 @@ class HomePage extends StatelessWidget {
     }
   }
 
-  Widget _buildAllPosts(){
+Widget _buildAllPosts(){
     return FutureBuilder<List<dynamic>>(
       future: getFollowingList(FirebaseAuth.instance.currentUser!.uid), // Replace with your method to get the current user ID
       builder: (context, followingSnapshot) {
@@ -188,12 +112,12 @@ class HomePage extends StatelessWidget {
 
             // Filter posts based on the following list
             List<PostModel> posts = snapshot.data!.docs
-              .where((doc) {
+                .where((doc) {
               var data = doc.data() as Map<String, dynamic>;
               return followingList.contains(data['userId']) || data['userId'] == FirebaseAuth.instance.currentUser!.uid; // Ensure userId matches your Firestore field
             })
-              .map((doc) => PostModel.fromJson(doc.data() as Map<String, dynamic>))
-              .toList();
+                .map((doc) => PostModel.fromJson(doc.data() as Map<String, dynamic>))
+                .toList();
             if (posts.isEmpty) {
               return Center(child: Text('No posts from followed users.'));
             }
@@ -210,4 +134,73 @@ class HomePage extends StatelessWidget {
     );
 
   }
+
+  /*
+  * _buildUserList() and _buildUserListItem() in comments below if needed👍🏻
+  * */
+  // Widget _buildUsersList() {
+  //   return StreamBuilder<List<Map<String, dynamic>>>(
+  //     stream: ChatServices().getUserStreamExcludingBlocked(),
+  //     builder: (context, snapshot) {
+  //       if (snapshot.hasError) {
+  //         return Center(
+  //           child: Text("Error: ${snapshot.error}"),
+  //         );
+  //       }
+  //
+  //       if (snapshot.connectionState == ConnectionState.waiting) {
+  //         return const Center(
+  //           child: CircularProgressIndicator(), // Improved loading indicator
+  //         );
+  //       }
+  //
+  //       // Check if snapshot has data
+  //       if (!snapshot.hasData || snapshot.data!.isEmpty) {
+  //         return const Center(
+  //           child: Text("No users found."),
+  //         );
+  //       }
+  //
+  //       // Build the user list
+  //       return Column(
+  //         crossAxisAlignment: CrossAxisAlignment.start,
+  //         children: [
+  //           // Add a title
+  //           Padding(
+  //             padding: const EdgeInsets.all(18.0), // Adjust padding as needed
+  //             child: Text(
+  //               '''"Openly: Discover, Connect, Share."''',
+  //               style: Theme.of(context).textTheme.titleMedium?.copyWith(
+  //                 fontWeight: FontWeight.bold,
+  //               ), // Use your desired style
+  //             ),
+  //           ),
+  //
+  //           // Add the ListView
+  //           Expanded( // Make sure ListView takes the available space
+  //             child: ListView(
+  //               children: snapshot.data!
+  //                   .map((userData) => _buildUsersListItem(userData, context))
+  //                   .toList(),
+  //             ),
+  //           ),
+  //         ],
+  //       );
+  //     },
+  //   );
+  // }
+
+  // Widget _buildUsersListItem(Map<String, dynamic> userData, BuildContext context) {
+  //   return UserTile(
+  //     userId: userData['uid'],
+  //     text: userData['email'],
+  //     imgUrl: userData['profilePic'],
+  //     onTap: () {
+  //       Navigator.push(
+  //         context,
+  //           SlideUpNavigationAnimation(child: ProfilePage(userId: userData['uid']))
+  //       );
+  //     },
+  //   );
+  // }
 }

@@ -3,9 +3,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mithc_koko_chat_app/components/bio_box.dart';
-import 'package:mithc_koko_chat_app/components/name_box.dart';
 import 'package:mithc_koko_chat_app/page_transition/slide_left_page_transition.dart';
 import 'package:mithc_koko_chat_app/page_transition/slide_right_page_transition.dart';
+import 'package:mithc_koko_chat_app/page_transition/slide_up_page_transition.dart';
 import 'package:mithc_koko_chat_app/pages/chat_page.dart';
 import 'package:mithc_koko_chat_app/pages/followers_list.dart';
 import 'package:mithc_koko_chat_app/services/post_services.dart';
@@ -77,6 +77,7 @@ class _ProfilePageState extends State<ProfilePage>with RouteAware {
         backgroundColor: Colors.transparent,
         foregroundColor: Theme.of(context).colorScheme.primary,
       ),
+
       body: Column(
         children: [
           Obx(() {
@@ -93,126 +94,142 @@ class _ProfilePageState extends State<ProfilePage>with RouteAware {
               padding: const EdgeInsets.symmetric(horizontal: 25.0),
               child: Column(
                 children: [
-                  Text(
-                    userDetails['email'] ?? 'No email',
-                    style: TextStyle(
-                        color: Theme.of(context).colorScheme.inversePrimary),
-                  ),
+                  // Text(
+                  //   userDetails['email'] ?? 'No email',
+                  //   style: TextStyle(fontSize:10,color: Theme.of(context).colorScheme.inversePrimary),
+                  // ),
                   const SizedBox(height: 25),
-                  Container(
-                    height: 120,
-                    width: 120,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      image: userDetails['profilePic'] != null &&
-                          userDetails['profilePic']!.isNotEmpty
-                          ? DecorationImage(
-                        image: NetworkImage(userDetails['profilePic']),
-                        fit: BoxFit.cover,
-                      )
-                          : const DecorationImage(
-                        image: NetworkImage(
-                            'https://www.gravatar.com/avatar/?d=identicon'),
-                        fit: BoxFit.cover,
+                  Row(
+                    children: [
+                      // Profile Image
+                      Container(
+                        height: 120,
+                        width: 120,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          image: userDetails['profilePic'] != null && userDetails['profilePic']!.isNotEmpty
+                              ? DecorationImage(
+                            image: NetworkImage(userDetails['profilePic']),
+                            fit: BoxFit.cover,
+                          )
+                              : const DecorationImage(
+                            image: NetworkImage('https://www.gravatar.com/avatar/?d=identicon'),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 16.0, horizontal: 20.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        // Followers
-                        Column(
+                      // Padding and Profile Info
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 20.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Obx(() => GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => FollowersList(
-                                          following: List<String>.from(
-                                              userDetails['following'] ??
-                                                  []),
-                                          followers: List<String>.from(
-                                              userDetails[
-                                              'followers']) ??
-                                              []),
-                                    ));
-                              },
+                            // Username
+                            Padding(
+                              padding: const EdgeInsets.only(left: 3.0),
                               child: Text(
-                                "${profileController.followersCount}",
+                                userDetails['name'] ?? 'user name', // Use the username from userDetails or fallback to a default
+                                overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
-                                  fontSize: 18,
+                                  fontSize: 14, // Adjusted font size for better readability
                                   fontWeight: FontWeight.bold,
-                                  color:
-                                  Theme.of(context).colorScheme.primary,
+                                  color: Theme.of(context).colorScheme.primary,
                                 ),
                               ),
-                            )),
-                            const SizedBox(height: 5),
-                            Text(
-                              "Followers",
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .inversePrimary,
-                              ),
+                            ),
+                            const SizedBox(height: 10), // Reduced gap between username and stats
+                            // Stats: Followers, Following, and Posts
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween, // Ensures equal spacing between stats
+                              children: [
+                                // Followers
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 10.0),
+                                  child: Column(
+                                    children: [
+                                      Obx(() => GestureDetector(
+                                        onTap: () {
+                                          Navigator.push(
+                                            context,
+                                            SlideUpNavigationAnimation(
+                                              child: FollowersList(
+                                                following: List<String>.from(userDetails['following'] ?? []),
+                                                followers: List<String>.from(userDetails['followers']) ?? [],
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                        child: Text(
+                                          "${profileController.followersCount}",
+                                          style: TextStyle(
+                                            fontSize: 16, // Adjusted font size for consistency
+                                            fontWeight: FontWeight.bold,
+                                            color: Theme.of(context).colorScheme.primary,
+                                          ),
+                                        ),
+                                      )),
+                                      const SizedBox(height: 5),
+                                      Text(
+                                        "Followers",
+                                        style: TextStyle(
+                                          fontSize: 12, // Slightly smaller font for labels
+                                          color: Theme.of(context).colorScheme.inversePrimary,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                // Following
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 10.0),
+                                  child: Column(
+                                    children: [
+                                      Obx(() => Text(
+                                        "${profileController.followingCount}",
+                                        style: TextStyle(
+                                          fontSize: 16, // Consistent font size
+                                          fontWeight: FontWeight.bold,
+                                          color: Theme.of(context).colorScheme.primary,
+                                        ),
+                                      )),
+                                      const SizedBox(height: 5),
+                                      Text(
+                                        "Following",
+                                        style: TextStyle(
+                                          fontSize: 12, // Consistent label size
+                                          color: Theme.of(context).colorScheme.inversePrimary,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                // Posts
+                                Column(
+                                  children: [
+                                    Obx(() => Text(
+                                      "${profileController.posts.length}",
+                                      style: TextStyle(
+                                        fontSize: 16, // Consistent font size
+                                        fontWeight: FontWeight.bold,
+                                        color: Theme.of(context).colorScheme.primary,
+                                      ),
+                                    )),
+                                    const SizedBox(height: 5),
+                                    Text(
+                                      "Posts",
+                                      style: TextStyle(
+                                        fontSize: 12, // Consistent label size
+                                        color: Theme.of(context).colorScheme.inversePrimary,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ],
                         ),
-                        // Following
-                        Column(
-                          children: [
-                            Obx(() => Text(
-                              "${profileController.followingCount}",
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color:
-                                Theme.of(context).colorScheme.primary,
-                              ),
-                            )),
-                            const SizedBox(height: 5),
-                            Text(
-                              "Following",
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .inversePrimary,
-                              ),
-                            ),
-                          ],
-                        ),
-                        // Posts
-                        Column(
-                          children: [
-                            Obx(() => Text(
-                              "${profileController.posts.length}",
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color:
-                                Theme.of(context).colorScheme.primary,
-                              ),
-                            )),
-                            const SizedBox(height: 5),
-                            Text(
-                              "Posts",
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .inversePrimary,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 25),
                   Row(
@@ -280,7 +297,7 @@ class _ProfilePageState extends State<ProfilePage>with RouteAware {
                     ],
                   ),
                   // Divider(),
-                  const SizedBox(height: 25),
+                 /* const SizedBox(height: 25),
                   // Divider(),
                   Padding(
                     padding: const EdgeInsets.only(left: 8.0),
@@ -299,15 +316,14 @@ class _ProfilePageState extends State<ProfilePage>with RouteAware {
                   NameBox(
                     nameText: userDetails['name'] ?? "No name available",
                   ),
-                  const SizedBox(height: 22,),
+                  const SizedBox(height: 22,),*/
                   Padding(
                     padding: const EdgeInsets.only(left: 8.0),
                     child: Row(
                       children: [
                         Text(
                           'Bio',
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.primary,
+                          style: TextStyle(color: Theme.of(context).colorScheme.primary,
                           ),
                         ),
                       ],
@@ -327,10 +343,7 @@ class _ProfilePageState extends State<ProfilePage>with RouteAware {
               children: [
                 Text(
                   'Posts',
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.primary,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+                  style: TextStyle(color: Theme.of(context).colorScheme.primary,fontSize: 18,fontWeight: FontWeight.bold,
                   ),
                 ),
               ],
@@ -344,8 +357,7 @@ class _ProfilePageState extends State<ProfilePage>with RouteAware {
                 return Center(
                   child: Text(
                     "No posts available",
-                    style:
-                    TextStyle(color: Theme.of(context).colorScheme.primary),
+                    style:TextStyle(color: Theme.of(context).colorScheme.primary),
                   ),
                 );
               }
@@ -377,8 +389,7 @@ class _ProfilePageState extends State<ProfilePage>with RouteAware {
     );
   }
 
-  void _showPostPreviewDialog(
-      BuildContext context, int index, List<PostModel> posts) {
+  void _showPostPreviewDialog(BuildContext context, int index, List<PostModel> posts) {
     showDialog(
       context: context,
       builder: (context) {

@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mithc_koko_chat_app/components/search_user_tile.dart';
 import 'package:mithc_koko_chat_app/controllers/search_controller.dart';
 import 'package:mithc_koko_chat_app/page_transition/slide_up_page_transition.dart';
 import 'package:mithc_koko_chat_app/pages/profile_page.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 class SearchPage extends StatelessWidget {
   final SearchPageController controller = Get.put(SearchPageController());
@@ -25,7 +28,7 @@ class SearchPage extends StatelessWidget {
         children: [
           _buildSearchField(),
           Obx(() => controller.isLoading.value
-              ? _buildLoadingIndicator()
+              ? _buildSearchResults(context)
               : _buildSearchResults(context)),
         ],
       ),
@@ -50,20 +53,38 @@ class SearchPage extends StatelessWidget {
 
   Widget _buildSearchResults(context) {
     return Obx(() {
+      if (controller.isLoading.value) {
+        return Expanded(
+          child: ListView.builder(
+            itemCount: 3,
+            itemBuilder: (context, index) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                child: Skeletonizer(
+                  enabled: true,
+                  child: SearchUserTile(userName: "userName", userId: "userId", imgUrl: "https://www.gravatar.com/avatar/?d=identicon", email: "email", onTap: (){}),
+                ),
+              );
+            },
+          ),
+        );
+      }
       if (controller.searchResults.isEmpty) {
+        // Show a message when no results are found
         return Expanded(
           child: Center(
             child: Text(
               "No results found.",
               style:
-                  TextStyle(color: Theme.of(context).colorScheme.onBackground),
+              TextStyle(color: Theme.of(context).colorScheme.onBackground),
             ),
           ),
         );
       }
-
+      // Show actual search results
       return Expanded(
-        child: ListView.builder(
+        child:
+        ListView.builder(
           itemCount: controller.searchResults.length,
           itemBuilder: (context, index) {
             final user = controller.searchResults[index];
@@ -84,6 +105,7 @@ class SearchPage extends StatelessWidget {
       );
     });
   }
+
 
   Widget _buildLoadingIndicator() {
     return const Expanded(
