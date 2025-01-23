@@ -12,18 +12,26 @@ class SearchPageController extends GetxController {
     await Future.delayed(Duration(milliseconds: 1500));
 
     try {
+      // Lowercase query for case-insensitive search
+      String lowercaseQuery = query.trim().toLowerCase();
+
+      // Fetch all users
       QuerySnapshot snapshot = await FirebaseFirestore.instance
           .collection("users")
-          .where("email", isEqualTo: query)
           .get();
 
-      searchResults.value =
-          snapshot.docs.map((doc) => doc.data() as Map<String, dynamic>).toList();
+      // Filter results based on name or email containing the query
+      searchResults.value = snapshot.docs
+          .map((doc) => doc.data() as Map<String, dynamic>)
+          .where((user) =>
+      (user['name']?.toString().toLowerCase().contains(lowercaseQuery) ?? false) ||
+          (user['email']?.toString().toLowerCase().contains(lowercaseQuery) ?? false)
+      ).toList();
+      // print(searchResults.length);
     } catch (e) {
       print("Error fetching users: $e");
       searchResults.clear();
     } finally {
       isLoading.value = false;
     }
-  }
-}
+  }}

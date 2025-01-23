@@ -4,6 +4,8 @@ import 'package:mithc_koko_chat_app/page_transition/slide_up_page_transition.dar
 import 'package:mithc_koko_chat_app/pages/profile_page.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
+import '../components/search_user_tile.dart';
+
 class FollowersList extends StatelessWidget {
   final List<String> followers;
   final List<String> following;
@@ -70,20 +72,17 @@ class FollowersList extends StatelessWidget {
                 itemCount: users.length,
                 itemBuilder: (context, index) {
                   final userData = users[index].data() as Map<String, dynamic>;
-                  return ListTile(
-                    leading: CircleAvatar(
-                      backgroundImage: NetworkImage(userData['profilePic']),
+                  return SearchUserTile(
+                    userName: userData['name'] ?? 'Unknown',
+                    userId: userData['userId'] ?? '',
+                    imgUrl: userData['profilePic'],
+                    email: userData['email'] ?? '',
+                    onTap: () => Navigator.push(
+                      context,
+                      SlideUpNavigationAnimation(
+                        child: ProfilePage(userId: userData['uid']),
+                      ),
                     ),
-                    title: Text(userData['name']),
-                    subtitle: Text(userData['email']),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        SlideUpNavigationAnimation(
-                          child: ProfilePage(userId: userData['uid']),
-                        ),
-                      );
-                    },
                   );
                 },
               );
@@ -107,14 +106,7 @@ class FollowersList extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
           child: Skeletonizer(
             enabled: true,
-            child: ListTile(
-              leading: CircleAvatar(
-                backgroundColor: Colors.grey[300],
-                radius: 25,
-              ),
-              title: Text("..............."),
-              subtitle:Text("...................................")
-            ),
+            child: SearchUserTile(userName: "userName", userId: "userId", imgUrl: "https://www.gravatar.com/avatar/?d=identicon", email: "email", onTap: (){}),
           ),
         );
       },

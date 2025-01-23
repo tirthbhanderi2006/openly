@@ -145,62 +145,65 @@ class _ProfilePageState extends State<ProfilePage>with RouteAware {
                                 // Followers
                                 Padding(
                                   padding: const EdgeInsets.only(right: 10.0),
-                                  child: Column(
-                                    children: [
-                                      Obx(() => GestureDetector(
-                                        onTap: () {
-                                          Navigator.push(
-                                            context,
-                                            SlideUpNavigationAnimation(
-                                              child: FollowersList(
-                                                following: List<String>.from(userDetails['following'] ?? []),
-                                                followers: List<String>.from(userDetails['followers']) ?? [],
-                                              ),
-                                            ),
-                                          );
-                                        },
-                                        child: Text(
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      Navigator.push(context, SlideUpNavigationAnimation(child: FollowersList(
+                                        following: List<String>.from(userDetails['following'] ?? []),
+                                        followers: List<String>.from(userDetails['followers']) ?? [],
+                                      ),));
+                                    },
+                                    child: Column(
+                                      children: [
+                                        Obx(() => Text(
                                           "${profileController.followersCount}",
                                           style: TextStyle(
                                             fontSize: 16, // Adjusted font size for consistency
                                             fontWeight: FontWeight.bold,
                                             color: Theme.of(context).colorScheme.primary,
                                           ),
+                                        )),
+                                        const SizedBox(height: 5),
+                                        Text(
+                                          "Followers",
+                                          style: TextStyle(
+                                            fontSize: 12, // Slightly smaller font for labels
+                                            color: Theme.of(context).colorScheme.inversePrimary,
+                                          ),
                                         ),
-                                      )),
-                                      const SizedBox(height: 5),
-                                      Text(
-                                        "Followers",
-                                        style: TextStyle(
-                                          fontSize: 12, // Slightly smaller font for labels
-                                          color: Theme.of(context).colorScheme.inversePrimary,
-                                        ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
                                 ),
                                 // Following
                                 Padding(
                                   padding: const EdgeInsets.only(right: 10.0),
-                                  child: Column(
-                                    children: [
-                                      Obx(() => Text(
-                                        "${profileController.followingCount}",
-                                        style: TextStyle(
-                                          fontSize: 16, // Consistent font size
-                                          fontWeight: FontWeight.bold,
-                                          color: Theme.of(context).colorScheme.primary,
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      Navigator.push(context, SlideUpNavigationAnimation(child: FollowersList(
+                                        following: List<String>.from(userDetails['following'] ?? []),
+                                        followers: List<String>.from(userDetails['followers']) ?? [],
+                                      ),));
+                                    },
+                                    child: Column(
+                                      children: [
+                                        Obx(() => Text(
+                                          "${profileController.followingCount}",
+                                          style: TextStyle(
+                                            fontSize: 16, // Consistent font size
+                                            fontWeight: FontWeight.bold,
+                                            color: Theme.of(context).colorScheme.primary,
+                                          ),
+                                        )),
+                                        const SizedBox(height: 5),
+                                        Text(
+                                          "Following",
+                                          style: TextStyle(
+                                            fontSize: 12, // Consistent label size
+                                            color: Theme.of(context).colorScheme.inversePrimary,
+                                          ),
                                         ),
-                                      )),
-                                      const SizedBox(height: 5),
-                                      Text(
-                                        "Following",
-                                        style: TextStyle(
-                                          fontSize: 12, // Consistent label size
-                                          color: Theme.of(context).colorScheme.inversePrimary,
-                                        ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
                                 ),
                                 // Posts

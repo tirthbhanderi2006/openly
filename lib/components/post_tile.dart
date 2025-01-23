@@ -416,8 +416,8 @@ class _PostTileState extends State<PostTile> with SingleTickerProviderStateMixin
                       ),
                     ),
                   Text(
-                    'Posted on ${widget.model.timeStamp}',
-                    style: Theme.of(context).textTheme.bodySmall,
+                      'Posted on ${'${widget.model.timeStamp.toLocal()}'.split(' ')[0]}',
+                       style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ],
               ),
