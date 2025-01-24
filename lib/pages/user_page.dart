@@ -62,7 +62,7 @@ class _UsersPageState extends State<UsersPage> {
 
         // Apply delay before showing actual data
         return FutureBuilder(
-          future: Future.delayed(const Duration(milliseconds:1500), () => snapshot.data!),
+          future: Future.delayed(const Duration(milliseconds:1000), () => snapshot.data!),
           builder: (context, futureSnapshot) {
             if (futureSnapshot.connectionState == ConnectionState.waiting) {
               // Show skeleton loader during delay

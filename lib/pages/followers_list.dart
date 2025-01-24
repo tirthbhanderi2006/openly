@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:mithc_koko_chat_app/page_transition/slide_up_page_transition.dart';
+import 'package:mithc_koko_chat_app/pages/chat_page.dart';
 import 'package:mithc_koko_chat_app/pages/profile_page.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
@@ -9,7 +11,6 @@ import '../components/search_user_tile.dart';
 class FollowersList extends StatelessWidget {
   final List<String> followers;
   final List<String> following;
-
   FollowersList({super.key, required this.following, required this.followers});
 
   @override
@@ -59,7 +60,7 @@ class FollowersList extends StatelessWidget {
           );
         } else if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
           return FutureBuilder(
-            future: Future.delayed(const Duration(milliseconds: 1500), () => snapshot.data!.docs),
+            future: Future.delayed(const Duration(milliseconds: 1000), () => snapshot.data!.docs),
             builder: (context, futureSnapshot) {
               if (futureSnapshot.connectionState == ConnectionState.waiting) {
                 // Show skeleton loader during delay
@@ -68,23 +69,44 @@ class FollowersList extends StatelessWidget {
 
               // Extract user data after the delay
               final users = futureSnapshot.data!;
-              return ListView.builder(
-                itemCount: users.length,
-                itemBuilder: (context, index) {
-                  final userData = users[index].data() as Map<String, dynamic>;
-                  return SearchUserTile(
-                    userName: userData['name'] ?? 'Unknown',
-                    userId: userData['userId'] ?? '',
-                    imgUrl: userData['profilePic'],
-                    email: userData['email'] ?? '',
-                    onTap: () => Navigator.push(
-                      context,
-                      SlideUpNavigationAnimation(
-                        child: ProfilePage(userId: userData['uid']),
+              return SlidableAutoCloseBehavior(
+                child: ListView.builder(
+                  itemCount: users.length,
+                  itemBuilder: (context, index) {
+                    final userData = users[index].data() as Map<String, dynamic>;
+                    return Slidable(
+                      startActionPane: ActionPane(
+                        motion: const StretchMotion(),
+                        children: [
+                          SlidableAction(
+                            onPressed: (context){
+                              Navigator.push(context,SlideUpNavigationAnimation(child: ProfilePage(userId: userData['uid'])));
+                            },
+                            label: "Profile",
+                            backgroundColor: Theme.of(context).colorScheme.primary,
+                          ),
+
+                          SlidableAction(
+                            onPressed: (context){
+                              Navigator.push(context,SlideUpNavigationAnimation(child: ChatPage(receiverEmail: userData['email'], receiverId: userData['uid'])));
+                            },
+                            label: "Chat",
+                            backgroundColor: Theme.of(context).colorScheme.secondary,
+                            borderRadius: BorderRadius.only(topRight: Radius.circular(16),bottomRight:Radius.circular(16)),
+                          )
+                        ],
                       ),
-                    ),
-                  );
-                },
+                      child: SearchUserTile(
+                        userName: userData['name'] ?? 'Unknown',
+                        userId: userData['userId'] ?? '',
+                        imgUrl: userData['profilePic'],
+                        email: userData['email'] ?? '',
+                        onTap: () {}
+                      ),
+                    );
+                
+                  },
+                ),
               );
             },
           );

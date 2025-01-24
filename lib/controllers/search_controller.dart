@@ -9,12 +9,10 @@ class SearchPageController extends GetxController {
     if (query.isEmpty) return;
 
     isLoading.value = true;
-    await Future.delayed(Duration(milliseconds: 1500));
-
+    await Future.delayed(Duration(milliseconds: 1000));
     try {
       // Lowercase query for case-insensitive search
       String lowercaseQuery = query.trim().toLowerCase();
-
       // Fetch all users
       QuerySnapshot snapshot = await FirebaseFirestore.instance
           .collection("users")

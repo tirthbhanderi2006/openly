@@ -41,7 +41,7 @@ class BlockedUsersPage extends StatelessWidget {
         }
 
         return FutureBuilder<List<Map<String, dynamic>>>(
-          future: Future.delayed(const Duration(milliseconds: 1500), () => blockedUsers),
+          future: Future.delayed(const Duration(milliseconds: 1000), () => blockedUsers),
           builder: (context, futureSnapshot) {
             if (futureSnapshot.connectionState == ConnectionState.waiting) {
               return _buildSkeletonLoader(); // Show skeleton loader during the delay
