@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 
-import 'package:mithc_koko_chat_app/auth/auth_gate.dart';
+import 'package:mithc_koko_chat_app/pages/auth/auth_gate.dart';
 
 class SplashScreen extends StatefulWidget {
   @override

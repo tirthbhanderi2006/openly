@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
 import 'package:mithc_koko_chat_app/pages/home_page.dart';
 import 'package:mithc_koko_chat_app/pages/splash_screen.dart';
-import 'package:mithc_koko_chat_app/services/local_notification_services.dart';
-import 'package:mithc_koko_chat_app/services/notification_services.dart';
-import 'package:mithc_koko_chat_app/themes/theme_provider.dart';
+import 'package:mithc_koko_chat_app/services/notification_services/local_notification_services.dart';
+import 'package:mithc_koko_chat_app/services/notification_services/notification_services.dart';
+import 'package:mithc_koko_chat_app/utils/themes/theme_provider.dart';
 import 'package:provider/provider.dart';
 import 'firebase_options.dart';
 

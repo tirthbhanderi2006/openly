@@ -53,7 +53,7 @@ dependencies:
   dio: ^5.7.0
   path: ^1.9.0
   path_provider: ^2.1.5
-  gal: ^2.3.1
+  flutter_remix: ^0.0.3
 
 
 
