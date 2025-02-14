@@ -1,5 +1,7 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:mithc_koko_chat_app/utils/themes/theme_provider.dart';
 
 class UserTile extends StatelessWidget {
   final String text;
@@ -7,13 +9,12 @@ class UserTile extends StatelessWidget {
   final String? imgUrl;
   final void Function()? onTap;
 
-  const UserTile({
-    super.key,
-    required this.text,
-    required this.onTap,
-    required this.userId,
-    required this.imgUrl
-  });
+  const UserTile(
+      {super.key,
+      required this.text,
+      required this.onTap,
+      required this.userId,
+      required this.imgUrl});
 
   @override
   Widget build(BuildContext context) {
@@ -53,21 +54,21 @@ class UserTile extends StatelessWidget {
                   borderRadius: BorderRadius.circular(60),
                   image: imgUrl != null
                       ? DecorationImage(
-                    image: NetworkImage(imgUrl!),
-                    fit: BoxFit.cover,
-                  )
+                          image: CachedNetworkImageProvider(imgUrl!),
+                          fit: BoxFit.cover,
+                        )
                       : DecorationImage(
-                    image: NetworkImage(
-                        'https://www.gravatar.com/avatar/?d=identicon'),
-                    fit: BoxFit.cover,
-                  ),
+                          image: CachedNetworkImageProvider(
+                              'https://www.gravatar.com/avatar/?d=identicon'),
+                          fit: BoxFit.cover,
+                        ),
                 ),
                 child: imgUrl == null
                     ? Icon(
-                  Icons.person,
-                  size: 72,
-                  color: Theme.of(context).colorScheme.primary,
-                )
+                        Icons.person,
+                        size: 72,
+                        color: Theme.of(context).colorScheme.primary,
+                      )
                     : null,
               ),
             ),
@@ -93,7 +94,9 @@ class UserTile extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
-                        color: colorScheme.tertiary,
+                        color: ThemeProvider().isDarkMode
+                            ? Colors.white
+                            : Colors.black,
                       ),
                     ),
                 ],

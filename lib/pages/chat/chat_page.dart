@@ -1,14 +1,21 @@
 import 'dart:io';
-
+import 'dart:ui';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_remix/flutter_remix.dart';
+import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:zego_uikit_prebuilt_call/zego_uikit_prebuilt_call.dart';
-import '../../components/widgets_components/chat_bubble.dart';
-import '../../components/widgets_components/my_textfield.dart';
+import 'package:mithc_koko_chat_app/components/chat_components/chat_bubble.dart';
+import 'package:mithc_koko_chat_app/controllers/chat_background_controller.dart';
+import 'package:mithc_koko_chat_app/pages/chat/image_grid.dart';
+import 'package:mithc_koko_chat_app/pages/profile/profile_page.dart';
+import 'package:mithc_koko_chat_app/pages/settings/setting_page.dart';
+import 'package:mithc_koko_chat_app/services/chat_services/call_services.dart';
+import 'package:mithc_koko_chat_app/utils/page_transition/slide_up_page_transition.dart';
+import 'package:mithc_koko_chat_app/utils/themes/theme_provider.dart';
 import '../../services/chat_services/chat_services.dart';
 
 class ChatPage extends StatefulWidget {
@@ -23,76 +30,89 @@ class ChatPage extends StatefulWidget {
 }
 
 class _ChatPageState extends State<ChatPage> {
-  final FocusNode node = FocusNode();
+  final FocusNode _focusNode = FocusNode();
   final TextEditingController _messageController = TextEditingController();
-  final ScrollController scrollController = ScrollController();
-  late Future<Map<String, dynamic>> userDetailsFuture;
+  final ScrollController _scrollController = ScrollController();
+  late Future<Map<String, dynamic>> _userDetailsFuture;
+  final ChatBackgroundController backgroundController =
+      Get.put(ChatBackgroundController());
 
   @override
   void initState() {
     super.initState();
-    userDetailsFuture = getUserDetails(widget.receiverId);
-    listenForIncomingCalls(context, FirebaseAuth.instance.currentUser!.uid);
-    node.addListener(() {
-      if (node.hasFocus) {
-        Future.delayed(
-            const Duration(milliseconds: 500), () => scrollToBottom());
-      }
-    });
-
-    // check if the user is following the receiver or not
-    checkIfFollowing();
+    _userDetailsFuture = _getUserDetails(widget.receiverId);
+    CallServices().listenForIncomingVideoCalls(
+        context, FirebaseAuth.instance.currentUser!.uid, widget.receiverEmail);
+    CallServices().listenForIncomingVoiceCalls(
+        context, FirebaseAuth.instance.currentUser!.uid, widget.receiverEmail);
+    _focusNode.addListener(_onFocusChange);
+    _checkIfFollowing();
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) {
+        Future.delayed(const Duration(milliseconds: 300), _scrollToBottom);
+        _scrollToBottom();
+      },
+    );
   }
 
   @override
   void dispose() {
-    node.dispose();
+    _focusNode.removeListener(_onFocusChange);
+    _focusNode.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
-  void scrollToBottom() {
-    scrollController.animateTo(
-      scrollController.position.maxScrollExtent,
-      duration: const Duration(seconds: 1),
-      curve: Curves.fastOutSlowIn,
-    );
+  void _onFocusChange() {
+    if (_focusNode.hasFocus) {
+      Future.delayed(const Duration(milliseconds: 300), _scrollToBottom);
+    }
   }
 
-// check checkIfFollowing
-  void checkIfFollowing() async {
-    widget.followingList = await ChatServices()
-        .getFollowingList(FirebaseAuth.instance.currentUser!.uid);
-    if (!widget.followingList.contains(widget.receiverId)) {
-      Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('You are not Following this user')),
+  void _scrollToBottom() {
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration:
+            const Duration(milliseconds: 300), // Adjusted for smooth scrolling
+        curve: Curves.easeInOut, // Smooth transition without bouncing
       );
     }
   }
 
-//   for sending messages
-  Future<Map<String, dynamic>> getUserDetails(String userId) async {
+  void _checkIfFollowing() async {
+    widget.followingList = await ChatServices()
+        .getFollowingList(FirebaseAuth.instance.currentUser!.uid);
+    if (!widget.followingList.contains(widget.receiverId)) {
+      Navigator.pop(context);
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   const SnackBar(content: Text('You are not following this user')),
+      // );
+      Get.snackbar("Chat", "You are not following this user",
+          snackPosition: SnackPosition.BOTTOM);
+    }
+  }
+
+  Future<Map<String, dynamic>> _getUserDetails(String userId) async {
     try {
       DocumentSnapshot snapshot = await FirebaseFirestore.instance
           .collection("users")
           .doc(userId)
           .get();
-      if (snapshot.exists) {
-        return snapshot.data() as Map<String, dynamic>;
-      } else {
-        return {};
-      }
+      return snapshot.data() as Map<String, dynamic>? ?? {};
     } catch (e) {
       print('Error: $e');
       return {};
     }
   }
 
-  Future<void> sendMessage(BuildContext context, {String? imageUrl}) async {
+  Future<void> _sendMessage(BuildContext context, {String? imageUrl}) async {
     if (_messageController.text.trim().isEmpty && imageUrl == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('You cannot send an empty message')),
-      );
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   const SnackBar(content: Text('You cannot send an empty message')),
+      // );
+      Get.snackbar("Message", "You cannot send an empty message",
+          snackPosition: SnackPosition.BOTTOM);
       return;
     }
 
@@ -103,23 +123,28 @@ class _ChatPageState extends State<ChatPage> {
     );
 
     _messageController.clear();
-    scrollToBottom();
+    _scrollToBottom();
     if (imageUrl != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Image sent successfully')),
-      );
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   const SnackBar(content: Text('Image sent successfully')),
+      // );
+      Get.snackbar("Message", "Image sent successfully!",
+          snackPosition: SnackPosition.BOTTOM);
     }
   }
 
-  Future<void> pickAndSendImage() async {
+  Future<void> _pickAndSendImage({required bool isCamera}) async {
     final ImagePicker picker = ImagePicker();
-    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+    final XFile? image = await picker.pickImage(
+        source: isCamera ? ImageSource.camera : ImageSource.gallery);
 
     if (image != null) {
       try {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Uploading image...')),
-        );
+        // ScaffoldMessenger.of(context).showSnackBar(
+        //   const SnackBar(content: Text('Uploading image...')),
+        // );
+        Get.snackbar("Message", "Uploading image",
+            snackPosition: SnackPosition.BOTTOM);
 
         String fileName = DateTime.now().millisecondsSinceEpoch.toString();
         Reference storageRef =
@@ -127,136 +152,128 @@ class _ChatPageState extends State<ChatPage> {
         await storageRef.putFile(File(image.path));
         String imageUrl = await storageRef.getDownloadURL();
 
-        await sendMessage(context, imageUrl: imageUrl);
+        await _sendMessage(context, imageUrl: imageUrl);
       } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to send image: ${e.toString()}')),
-        );
+        // ScaffoldMessenger.of(context).showSnackBar(
+        //   SnackBar(content: Text('Failed to send image: ${e.toString()}')),
+        // );
+        Get.snackbar("Message", "Failed to send image: ${e.toString()}",
+            snackPosition: SnackPosition.BOTTOM);
       }
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No image selected')),
-      );
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   const SnackBar(content: Text('No image selected')),
+      // );
+      Get.snackbar("Message", "No image selected",
+          snackPosition: SnackPosition.BOTTOM);
     }
   }
 
-  // for video call
-  void startVideoCall(
-      BuildContext context, String currentUserId, String receiverId) async {
-    // Generate a unique call ID
-    String callID = generateCallID(currentUserId, receiverId);
-    // Save call details to Firestore
-    await FirebaseFirestore.instance.collection('video_calls').doc(callID).set({
-      'callID': callID,
-      'callerID': currentUserId,
-      'receiverID': receiverId,
-      'startTime': FieldValue.serverTimestamp(),
-      'status': 'ongoing', // You can update this when the call ends
-    });
-    // Navigate to the video call screen
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => ZegoUIKitPrebuiltCall(
-          appID: 482616865, //app ID
-          appSign:
-              "69c2940bbaac4ae2e8d94ffc1343fde1fed742133c9cfb9eedef243e6912e5c1", //app sign
-          userID: currentUserId,
-          userName: FirebaseAuth.instance.currentUser!.email.toString(),
-          callID: callID,
-          config: ZegoUIKitPrebuiltCallConfig.oneOnOneVideoCall()
-            ..useSpeakerWhenJoining = true,
-        ),
-      ),
+  void showProfileDialog(BuildContext context, String? profilePicUrl) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(
+            'Profile Options',
+            style: TextStyle(),
+          ),
+          actionsAlignment: MainAxisAlignment.center,
+          actions: [
+            Column(
+              children: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      SlideUpNavigationAnimation(
+                        child: ProfilePage(userId: widget.receiverId),
+                      ),
+                    );
+                  },
+                  child: Text(
+                    'Visit Profile',
+                    style: TextStyle(
+                      color: isDarkMode ? Colors.white : Colors.black,
+                    ),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    showProfilePicture(profilePicUrl: profilePicUrl!);
+                  },
+                  child: Text(
+                    'View Profile Picture',
+                    style: TextStyle(
+                      color: isDarkMode ? Colors.white : Colors.black,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        );
+      },
     );
   }
 
-  String generateCallID(String currentUserId, String receiverId) {
-    // Use a consistent format for call ID (e.g., sorted alphabetically for uniqueness)
-    return currentUserId.compareTo(receiverId) < 0
-        ? '$currentUserId-$receiverId'
-        : '$receiverId-$currentUserId';
-  }
-
-  void listenForIncomingCalls(BuildContext context, String currentUserId) {
-    FirebaseFirestore.instance
-        .collection('video_calls')
-        .where('receiverID', isEqualTo: currentUserId)
-        .where('status', isEqualTo: 'ongoing')
-        .snapshots()
-        .listen((querySnapshot) {
-      for (var docChange in querySnapshot.docChanges) {
-        if (docChange.type == DocumentChangeType.added) {
-          // New incoming call detected
-          var callData = docChange.doc.data();
-          showIncomingCallDialog(context, callData!);
-        }
-      }
-    });
-  }
-
-  void showIncomingCallDialog(
-      BuildContext context, Map<String, dynamic> callData) {
+  void showProfilePicture({required String profilePicUrl}) {
     showDialog(
       context: context,
-      barrierDismissible: false,
+      barrierDismissible: true, // Allow dismissal by tapping outside the dialog
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Incoming Call'),
-          content:
-              Text('You have an incoming call from ${widget.receiverEmail}'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                // Reject the call
-                FirebaseFirestore.instance
-                    .collection('video_calls')
-                    .doc(callData['callID'])
-                    .set({'status': 'rejected'});
-                Navigator.of(context).pop();
-              },
-              child: const Text(
-                'Reject',
-                style: TextStyle(color: Colors.red),
-              ),
-            ),
-            TextButton(
-              onPressed: () {
-                // Accept the call
-                Navigator.of(context).pop(); // Close the dialog
-                Navigator.push(
-                  context,
-                  //here the video screen is launching
-                  MaterialPageRoute(
-                    builder: (context) => ZegoUIKitPrebuiltCall(
-                      appID: 482616865, //app id
-                      appSign:
-                          "69c2940bbaac4ae2e8d94ffc1343fde1fed742133c9cfb9eedef243e6912e5c1", //app sign
-                      userID: callData['receiverID'],
-                      userName:
-                          FirebaseAuth.instance.currentUser!.email.toString(),
-                      callID: callData['callID'],
-                      config: ZegoUIKitPrebuiltCallConfig.oneOnOneVideoCall()
-                        ..useSpeakerWhenJoining = true,
-                      events: ZegoUIKitPrebuiltCallEvents(
-                        onCallEnd: (event, defaultAction) {
-                          Navigator.pop(context);
-                          FirebaseFirestore.instance
-                              .collection('video_calls')
-                              .doc(callData['callID'])
-                              .delete();
-                        },
+        return Center(
+          // Center the dialog explicitly
+          child: Material(
+            color: Colors.transparent, // Transparent material for the dialog
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                // Blurred Background
+                BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                  child: Container(
+                    color: Colors.black.withOpacity(0.5),
+                  ),
+                ),
+                // Circular Profile Image
+                Container(
+                  height: 220, // Profile image size
+                  width: 220,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.5),
+                        blurRadius: 15,
                       ),
+                    ],
+                    image: DecorationImage(
+                      image: CachedNetworkImageProvider(
+                        profilePicUrl.isNotEmpty
+                            ? profilePicUrl
+                            : 'https://www.gravatar.com/avatar/?d=identicon',
+                      ),
+                      fit: BoxFit.cover,
                     ),
                   ),
-                );
-              },
-              child: const Text(
-                'Accept',
-                style: TextStyle(color: Colors.green),
-              ),
+                ),
+                // Close Button
+                Positioned(
+                  top: 10,
+                  right: 10,
+                  child: IconButton(
+                    icon: const Icon(Icons.close, color: Colors.white),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         );
       },
     );
@@ -265,91 +282,261 @@ class _ChatPageState extends State<ChatPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-
+    // String imageAsset = ThemeProvider().isDarkMode
+    //     ? 'lib/assets/dark-theme-chat.jpg'
+    //     : 'lib/assets/light-theme-chat.jpg';
     return FutureBuilder<Map<String, dynamic>>(
-      future: userDetailsFuture,
+      future: _userDetailsFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Scaffold(
-            backgroundColor: theme.colorScheme.background,
-            body: const Center(
-              child: CircularProgressIndicator(),
-            ),
+            // backgroundColor: theme.colorScheme.background,
+            body: const Center(child: CircularProgressIndicator()),
           );
         }
-        if (snapshot.hasError) {
+        if (snapshot.hasError || !snapshot.hasData || snapshot.data!.isEmpty) {
           return Scaffold(
             backgroundColor: theme.colorScheme.background,
             body: Center(
               child: Text(
-                "Error: ${snapshot.error}",
+                snapshot.hasError
+                    ? "Error: ${snapshot.error}"
+                    : "User not found.",
                 style: TextStyle(color: theme.colorScheme.onBackground),
               ),
             ),
           );
         }
 
-        if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return Scaffold(
-            backgroundColor: theme.colorScheme.background,
-            body: const Center(
-              child: Text("User not found."),
-            ),
-          );
-        }
         Map<String, dynamic> userMap = snapshot.data!;
 
         return Scaffold(
-          backgroundColor: theme.colorScheme.background,
-          appBar: AppBar(
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.videocam),
-                onPressed: () {
-                  startVideoCall(
-                      context,
-                      FirebaseAuth.instance.currentUser!.uid,
-                      widget.receiverId);
-                },
-              ),
-              IconButton(
-                icon: const Icon(Icons.call),
-                onPressed: () {},
-              ),
-            ],
-            automaticallyImplyLeading: true,
-            leading: Padding(
-              padding: const EdgeInsets.all(8.0), // Reduced padding
-              child: CircleAvatar(
-                backgroundImage: userMap['profilePic'] != null
-                    ? NetworkImage(userMap['profilePic'])
-                    : null,
-                backgroundColor: userMap['profilePic'] == null
-                    ? theme.colorScheme.primaryContainer
-                    : Colors.transparent,
-                child: userMap['profilePic'] == null
-                    ? const Icon(Icons.person, color: Colors.white)
-                    : null,
-              ),
-            ),
-            title: Text(
-              userMap['name'] ?? "Unknown User",
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-            ),
-            centerTitle: false,
-            titleSpacing: 2,
-            backgroundColor: theme.colorScheme.primary,
-            foregroundColor: Colors.white,
-            elevation: 0,
-          ),
-          body: Column(
-            children: [
-              Expanded(child: _buildMessageList()),
-              _buildUserInput(context),
-            ],
-          ),
+          appBar: _buildAppBar(context, userMap, theme),
+          body: Obx(() => DecoratedBox(
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: backgroundController
+                            .backgroundImagePath.value.isNotEmpty
+                        ? FileImage(File(
+                                backgroundController.backgroundImagePath.value))
+                            as ImageProvider
+                        : AssetImage(ThemeProvider().isDarkMode
+                            ? 'lib/assets/dark-theme-chat.jpg'
+                            : 'lib/assets/light-theme-chat.jpg'),
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    Expanded(child: _buildMessageList()),
+                    _buildUserInput(context),
+                  ],
+                ),
+              )),
+          // floatingActionButton: FloatingActionButton(
+          //   onPressed: () => backgroundController.removeBackground(),
+          //   child: Icon(Icons.image),
+          // ),
         );
       },
+    );
+  }
+
+  AppBar _buildAppBar(
+      BuildContext context, Map<String, dynamic> userMap, ThemeData theme) {
+    return AppBar(
+      actions: [
+        IconButton(
+          icon: Icon(Icons.videocam_outlined,
+              color: ThemeProvider().isDarkMode ? Colors.white : Colors.black),
+          onPressed: () {
+            CallServices().startVideoCall(
+              context,
+              FirebaseAuth.instance.currentUser!.uid,
+              widget.receiverId,
+            );
+          },
+        ),
+        PopupMenuButton<String>(
+          onSelected: (value) {
+            if (value == 'clear-chat') {
+              _clearChat(
+                  context: context,
+                  currentUserId: FirebaseAuth.instance.currentUser!.uid,
+                  receiverId: widget.receiverId);
+              // ChatServices().clearChat(
+              //     FirebaseAuth.instance.currentUser!.uid, widget.receiverId);
+            } else if (value == 'block-user') {
+              _blockUser(context: context, userId: widget.receiverId);
+            } else if (value == 'settings') {
+              Navigator.push(
+                  context, SlideUpNavigationAnimation(child: SettingPage()));
+            } else if (value == 'voice-call') {
+              CallServices().startAudioCall(context,
+                  FirebaseAuth.instance.currentUser!.uid, widget.receiverId);
+            } else if (value == 'remove-bg') {
+              backgroundController.removeBackground();
+            }
+          },
+          itemBuilder: (BuildContext context) => [
+            //voice call feature
+            PopupMenuItem<String>(
+              value: 'voice-call',
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.call, // FlutterRemix icon for clear chat
+                    color: Theme.of(context).colorScheme.onSurface,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    'Voice call',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Clear Chat Option
+            PopupMenuItem<String>(
+              value: 'clear-chat',
+              child: Row(
+                children: [
+                  Icon(
+                    FlutterRemix
+                        .delete_bin_line, // FlutterRemix icon for clear chat
+                    color: Theme.of(context).colorScheme.onSurface,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    'Clear Chat',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // reomoe chat bg
+            PopupMenuItem<String>(
+              value: 'remove-bg',
+              child: Row(
+                children: [
+                  Icon(
+                    Icons
+                        .image_not_supported_outlined, // FlutterRemix icon for remove background
+                    color: Theme.of(context).colorScheme.onSurface,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    'Remove Background',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Block User Option
+            PopupMenuItem<String>(
+              value: 'block-user',
+              child: Row(
+                children: [
+                  Icon(
+                    FlutterRemix
+                        .user_unfollow_line, // FlutterRemix icon for block user
+                    color: Theme.of(context).colorScheme.onSurface,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    'Block User',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Settings Option
+            PopupMenuItem<String>(
+              value: 'settings',
+              child: Row(
+                children: [
+                  Icon(
+                    FlutterRemix
+                        .settings_line, // FlutterRemix icon for settings
+                    color: Theme.of(context).colorScheme.onSurface,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    'Settings',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        )
+      ],
+      automaticallyImplyLeading: true,
+      leading: IconButton(
+        icon: Icon(Icons.arrow_back,
+            color: ThemeProvider().isDarkMode ? Colors.white : Colors.black),
+        onPressed: () => Navigator.pop(context),
+      ),
+      title: Row(
+        children: [
+          GestureDetector(
+            onTap: () => showProfileDialog(context, userMap['profilePic']),
+            child: CircleAvatar(
+              backgroundImage: userMap['profilePic'] != null
+                  ? CachedNetworkImageProvider(userMap['profilePic'])
+                  : null,
+              backgroundColor: userMap['profilePic'] == null
+                  ? theme.colorScheme.primaryContainer
+                  : Colors.transparent,
+              child: userMap['profilePic'] == null
+                  ? const Icon(Icons.person, color: Colors.white)
+                  : null,
+            ),
+          ),
+          const SizedBox(width: 10),
+          GestureDetector(
+            onTap: () async {
+              List<String> imageUrls = await ChatServices().fetchSharedImages(
+                senderId: FirebaseAuth.instance.currentUser!.uid,
+                receiverId: widget.receiverId,
+              );
+              Navigator.push(
+                  context,
+                  SlideUpNavigationAnimation(
+                      child: ImageGrid(imageUrls: imageUrls)));
+            },
+            child: Text(
+              userMap['name'] ?? "Unknown User",
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+            ),
+          ),
+        ],
+      ),
+      backgroundColor: Theme.of(context).colorScheme.background,
+      elevation: 4,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(16)),
+      ),
     );
   }
 
@@ -364,10 +551,12 @@ class _ChatPageState extends State<ChatPage> {
         if (snapshot.hasError) {
           return Center(child: Text('Error: ${snapshot.error}'));
         }
-        return ListView(
-          controller: scrollController,
-          children:
-              snapshot.data!.docs.map((doc) => _buildMessageItem(doc)).toList(),
+        return ListView.builder(
+          controller: _scrollController,
+          itemCount: snapshot.data!.docs.length,
+          itemBuilder: (context, index) {
+            return _buildMessageItem(snapshot.data!.docs[index]);
+          },
         );
       },
     );
@@ -378,60 +567,167 @@ class _ChatPageState extends State<ChatPage> {
     bool isCurrentUser =
         data['senderId'] == FirebaseAuth.instance.currentUser!.uid;
 
-    return Column(
-      crossAxisAlignment:
-          isCurrentUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-      children: [
-        ChatBubble(
-          message: data['message'],
-          isCurrentUser: isCurrentUser,
-          userId: data['senderId'],
-          messageId: doc.id,
-          imageUrl: data['imageUrl'],
-        ),
-      ],
+    return ChatBubble(
+      message: data['message'],
+      isCurrentUser: isCurrentUser,
+      userId: data['senderId'],
+      messageId: doc.id,
+      imageUrl: data['imageUrl'],
+      reciverId: data['receiverId'],
     );
   }
 
   Widget _buildUserInput(BuildContext context) {
     final theme = Theme.of(context);
+
     return Padding(
-      padding: const EdgeInsets.only(bottom: 30.0, right: 12),
-      child: Row(
-        children: [
-          Expanded(
-            child: MyTextfield(
-              hintText: 'Type a message',
-              obscureText: false,
-              controller: _messageController,
-              focusNode: node,
-              hintStyle: TextStyle(
-                  color: theme.colorScheme.onBackground.withOpacity(0.5)),
-              fillColor: theme.colorScheme.surfaceVariant,
-              textColor: theme.colorScheme.onBackground,
+      padding: const EdgeInsets.all(12.0),
+      child: Container(
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surfaceVariant,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.9),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: TextField(
+                  controller: _messageController,
+                  focusNode: _focusNode,
+                  style: TextStyle(
+                    color: theme.colorScheme.onBackground,
+                    fontSize: 16,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: 'Type a message...',
+                    hintStyle: TextStyle(
+                      color: theme.colorScheme.onBackground.withOpacity(0.5),
+                      fontSize: 16,
+                    ),
+                    border: InputBorder.none, // Remove default border
+                    contentPadding: const EdgeInsets.symmetric(vertical: 16),
+                    filled: true,
+                    fillColor: Colors.transparent, // Transparent background
+                  ),
+                  maxLines: null, // Allow multiple lines
+                  keyboardType:
+                      TextInputType.multiline, // Enable multiline input
+                  textCapitalization: TextCapitalization.sentences,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            // Image Picker Button with Animation
+            IconButton(
+              icon: Icon(
+                FlutterRemix.image_add_fill,
+                color: ThemeProvider().isDarkMode ? Colors.white : Colors.black,
+                size: 24,
+              ),
+              onPressed: () async {
+                await _pickAndSendImage(isCamera: false);
+              },
+            ),
+            // Camera Option Button with Animation
+            IconButton(
+              icon: Icon(
+                FlutterRemix.camera_fill,
+                color: ThemeProvider().isDarkMode ? Colors.white : Colors.black,
+                size: 24,
+              ),
+              onPressed: () async {
+                await _pickAndSendImage(isCamera: true);
+              },
+            ),
+            // Send Button with Animation
+            IconButton(
+              icon: Icon(
+                FlutterRemix.send_plane_fill,
+                color: ThemeProvider().isDarkMode ? Colors.white : Colors.black,
+                size: 24,
+              ),
+              onPressed: () => _sendMessage(context),
+            ),
+            const SizedBox(width: 12),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // block user via popup menu
+  void _blockUser({
+    required BuildContext context,
+    required String userId,
+  }) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Block User'),
+        content: const Text('Are you sure you want to block this user?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              ChatServices().blockUser(userId);
+              Navigator.pop(context); // For dialog
+              Navigator.pop(context); // To pop out chat page
+              // ScaffoldMessenger.of(context).showSnackBar(
+              //   const SnackBar(content: Text('User Blocked')),
+              // );
+              Get.snackbar("Block", "User Blocked",
+                  snackPosition: SnackPosition.BOTTOM);
+            },
+            child: const Text(
+              'Block',
+              style: TextStyle(color: Colors.red),
             ),
           ),
-          Container(
-            decoration: BoxDecoration(
-              color: theme.colorScheme.primary,
-              borderRadius: const BorderRadius.all(Radius.circular(100)),
-            ),
-            child: IconButton(
-              icon:
-                  const Icon(FlutterRemix.image_add_fill, color: Colors.white),
-              onPressed: pickAndSendImage,
-            ),
+        ],
+      ),
+    );
+  }
+
+// chat clear function via popup menu
+  _clearChat(
+      {required BuildContext context,
+      required String currentUserId,
+      required String receiverId}) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Block User'),
+        content: const Text(
+            'Are you sure you want to cleat all message from this chat?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
           ),
-          const SizedBox(width: 5),
-          Container(
-            decoration: BoxDecoration(
-              color: theme.colorScheme.primary,
-              borderRadius: const BorderRadius.all(Radius.circular(100)),
-            ),
-            child: IconButton(
-              onPressed: () => sendMessage(context),
-              icon: const Icon(FlutterRemix.send_plane_2_fill,
-                  color: Colors.white),
+          TextButton(
+            onPressed: () {
+              ChatServices().clearChat(currentUserId, receiverId);
+              Navigator.pop(context);
+              // ScaffoldMessenger.of(context).showSnackBar(
+              //   const SnackBar(content: Text('Chat cleared')),
+              // );
+              Get.snackbar("chat", "Chat cleared",
+                  snackPosition: SnackPosition.BOTTOM);
+            },
+            child: const Text(
+              'clear chat',
+              style: TextStyle(color: Colors.green),
             ),
           ),
         ],

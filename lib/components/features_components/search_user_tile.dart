@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -25,57 +26,54 @@ class SearchUserTile extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-        padding: const EdgeInsets.all(12),
+        margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+        padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: colorScheme.secondary,
+          color: colorScheme.secondary.withOpacity(0.15), // Soft glass effect
           borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.white.withOpacity(0.2)),
           boxShadow: [
             BoxShadow(
-              color: colorScheme.shadow.withOpacity(0.1),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
+              color: Colors.black.withOpacity(0.15),
+              blurRadius: 10,
+              spreadRadius: 1,
+              offset: const Offset(0, 3),
             ),
           ],
         ),
         child: Row(
           children: [
-            // User Avatar or Icon
+            /// **User Avatar**
             Container(
+              width: 50,
+              height: 50,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: colorScheme.primaryContainer,
+                border: Border.all(color: Colors.white.withOpacity(0.2)),
               ),
-              padding: const EdgeInsets.all(0.0),
-              child: Container(
-                width: 50,
-                height: 50,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.secondary,
-                  borderRadius: BorderRadius.circular(60),
-                  image: imgUrl != null
-                      ? DecorationImage(
-                          image: NetworkImage(imgUrl!),
-                          fit: BoxFit.cover,
-                        )
-                      : const DecorationImage(
-                          image: NetworkImage(
-                              'https://www.gravatar.com/avatar/?d=identicon'),
-                          fit: BoxFit.cover,
-                        ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(50),
+                child: CachedNetworkImage(
+                  imageUrl:
+                      imgUrl ?? 'https://www.gravatar.com/avatar/?d=identicon',
+                  placeholder: (context, url) => const Icon(
+                    Icons.person,
+                    size: 30,
+                    color: Colors.grey,
+                  ),
+                  errorWidget: (context, url, error) => const Icon(
+                    Icons.person_off,
+                    size: 30,
+                    color: Colors.red,
+                  ),
+                  fit: BoxFit.cover,
                 ),
-                child: imgUrl == null
-                    ? Icon(
-                        Icons.person,
-                        size: 36,
-                        color: Theme.of(context).colorScheme.primary,
-                      )
-                    : null,
               ),
             ),
-            const SizedBox(width: 16),
 
-            // Username and Email
+            const SizedBox(width: 14),
+
+            /// **User Info**
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -85,16 +83,16 @@ class SearchUserTile extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: colorScheme.onSecondary,
+                      color: colorScheme.onBackground,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 2),
                   Text(
                     email,
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
-                      color: colorScheme.onSecondary.withOpacity(0.8),
+                      color: colorScheme.onBackground.withOpacity(0.7),
                     ),
                   ),
                   if (isCurrentUser)
@@ -105,7 +103,7 @@ class SearchUserTile extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
-                          color: colorScheme.tertiary,
+                          color: colorScheme.primary.withOpacity(0.8),
                         ),
                       ),
                     ),
@@ -113,10 +111,11 @@ class SearchUserTile extends StatelessWidget {
               ),
             ),
 
-            // Optional trailing action/icon
+            /// **Trailing Icon**
             Icon(
-              Icons.chevron_right,
-              color: colorScheme.onSecondary.withOpacity(0.6),
+              Icons.arrow_forward_ios_rounded,
+              color: colorScheme.onSecondary.withOpacity(0.5),
+              size: 18,
             ),
           ],
         ),

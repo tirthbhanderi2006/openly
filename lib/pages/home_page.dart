@@ -2,12 +2,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_remix/flutter_remix.dart';
-import 'package:mithc_koko_chat_app/components/widgets_components/my_drawer.dart';
+import 'package:lottie/lottie.dart';
 import 'package:mithc_koko_chat_app/components/features_components/post_tile.dart';
 import 'package:mithc_koko_chat_app/components/widgets_components/user_grid.dart';
-import 'package:mithc_koko_chat_app/pages/chat/user_page.dart';
-import '../model/post_model.dart';
-import '../utils/page_transition/slide_left_page_transition.dart';
+import 'package:mithc_koko_chat_app/model/post_model.dart';
+import 'package:mithc_koko_chat_app/utils/page_transition/slide_up_page_transition.dart';
 import 'features/create_post_page.dart';
 
 class HomePage extends StatelessWidget {
@@ -17,92 +16,75 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.background,
-      appBar: AppBar(
-        actions: [
-          IconButton(
-              onPressed: () => Navigator.push(
-                  context, SlideLeftPageTransition(child: CreatePostPage())),
-              icon: Icon(FlutterRemix.image_add_fill)),
-          Padding(
-            padding: const EdgeInsets.only(right: 8.0, bottom: 5),
-            child: IconButton(
-                onPressed: () => Navigator.push(
-                    context, SlideLeftPageTransition(child: UsersPage())),
-                icon: Icon(FlutterRemix.chat_heart_line)),
-          )
-        ],
-        title: const Text(
-          "O P E N L Y",
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        centerTitle: true,
-        backgroundColor: Colors.transparent,
-        foregroundColor: Theme.of(context).colorScheme.primary,
-      ),
-      // body: _buildUsersList(),
+      appBar: _buildAppBar(context),
       body: _buildAllPosts(),
-      drawer: const MyDrawer(),
     );
   }
 
-  Stream<List<DocumentSnapshot>> getFilteredPostsStream(
-      String currentUserId) async* {
-    // Fetch the following list
-    List<dynamic> followingList = await getFollowingList(currentUserId);
-
-    // Listen to the posts collection
-    await for (var snapshot in FirebaseFirestore.instance
-        .collection('posts')
-        .orderBy('timeStamp', descending: true)
-        .snapshots()) {
-      // Filter the posts where the userId is in the following list
-      var filteredPosts = snapshot.docs.where((doc) {
-        var data = doc.data() as Map<String, dynamic>;
-        return followingList
-            .contains(data['userId']); // Adjust 'userId' key if different
-      }).toList();
-
-      yield filteredPosts;
-    }
+  AppBar _buildAppBar(BuildContext context) {
+    return AppBar(
+      // actions: [
+      //   IconButton(
+      //     onPressed: () => Navigator.push(
+      //       context,
+      //       SlideLeftPageTransition(child: const CreatePostPage()),
+      //     ),
+      //     icon: const Icon(FlutterRemix.image_add_fill),
+      //   ),
+      //   Padding(
+      //     padding: const EdgeInsets.only(right: 8.0, bottom: 5),
+      //     child: IconButton(
+      //       onPressed: () => Navigator.push(
+      //         context,
+      //         SlideLeftPageTransition(child: const UsersPage()),
+      //       ),
+      //       icon: const Icon(FlutterRemix.chat_heart_line),
+      //     ),
+      //   ),
+      // ],
+      title: const Text(
+        "O P E N L Y",
+        style: TextStyle(fontWeight: FontWeight.bold),
+      ),
+      centerTitle: true,
+      backgroundColor: Colors.transparent,
+      foregroundColor: Theme.of(context).colorScheme.primary,
+    );
   }
 
-  Future<List<dynamic>> getFollowingList(String userId) async {
+  Future<List<String>> _getFollowingList(String userId) async {
     try {
-      DocumentSnapshot snapshot = await FirebaseFirestore.instance
+      final snapshot = await FirebaseFirestore.instance
           .collection('users')
           .doc(userId)
           .get();
+
       if (snapshot.exists) {
-        var userDetails = snapshot.data() as Map<String, dynamic>;
-        return userDetails["following"] ?? [];
-      } else {
-        return [];
+        return List<String>.from(
+            (snapshot.data() as Map<String, dynamic>)['following'] ?? []);
       }
     } catch (e) {
-      print("Error: $e");
-      return [];
+      debugPrint("Error fetching following list: $e");
     }
+    return [];
   }
 
   Widget _buildAllPosts() {
-    return FutureBuilder<List<dynamic>>(
-      future: getFollowingList(FirebaseAuth.instance.currentUser!
-          .uid), // Replace with your method to get the current user ID
+    final currentUserId = FirebaseAuth.instance.currentUser!.uid;
+
+    return FutureBuilder<List<String>>(
+      future: _getFollowingList(currentUserId),
       builder: (context, followingSnapshot) {
         if (followingSnapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
+          return const Center(child: CircularProgressIndicator());
         }
 
         if (followingSnapshot.hasError) {
-          return Center(child: Text('Error loading following list!'));
+          return Center(child: Text('Error: ${followingSnapshot.error}'));
         }
 
-        if (!followingSnapshot.hasData || followingSnapshot.data!.isEmpty) {
-          return _buildUserGrid();
-          // return Center(child: Text('You are not following anyone.'));
-        }
-
-        List<dynamic> followingList = followingSnapshot.data!;
+        final followingList = followingSnapshot.data ?? [];
+        if (followingList.isEmpty) return _buildUserGrid(context);
 
         return StreamBuilder<QuerySnapshot>(
           stream: FirebaseFirestore.instance
@@ -111,39 +93,95 @@ class HomePage extends StatelessWidget {
               .snapshots(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator());
+              return const Center(child: CircularProgressIndicator());
             }
 
             if (snapshot.hasError) {
-              return Center(child: Text('Something went wrong!'));
+              return Center(child: Text('Error: ${snapshot.error}'));
             }
 
-            if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-              return _buildUserGrid();
-              // return Center(child: Text('No posts found.'));
-            }
+            final posts = snapshot.data?.docs
+                    .map((doc) {
+                      final data = doc.data() as Map<String, dynamic>;
+                      return (followingList.contains(data['userId']) ||
+                              data['userId'] == currentUserId)
+                          ? PostModel.fromJson(data)
+                          : null;
+                    })
+                    .where((post) => post != null)
+                    .toList() ??
+                [];
 
-            // Filter posts based on the following list
-            List<PostModel> posts = snapshot.data!.docs
-                .where((doc) {
-                  var data = doc.data() as Map<String, dynamic>;
-                  return followingList.contains(data['userId']) ||
-                      data['userId'] ==
-                          FirebaseAuth.instance.currentUser!
-                              .uid; // Ensure userId matches your Firestore field
-                })
-                .map((doc) =>
-                    PostModel.fromJson(doc.data() as Map<String, dynamic>))
-                .toList();
             if (posts.isEmpty) {
-              return Center(child: Text('No posts from followed users.'));
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Image.asset('lib/assets/happy-face.gif'),
+                    // Image.asset(
+                    //     height: 80,
+                    //     'lib/assets/cool.png'
+                    // ),
+                    Lottie.asset('lib/assets/new-post.json'),
+                    const SizedBox(height: 20),
+                    Text(
+                      "No posts from followed users.",
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Theme.of(context).colorScheme.inversePrimary,
+                        fontWeight: FontWeight.normal,
+                      ),
+                    ),
+                    SizedBox(height: 10,),
+                    ShaderMask(
+                      shaderCallback: (bounds) {
+                        final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+                        return LinearGradient(
+                          colors: isDarkMode
+                              ? [Colors.white, Colors.grey.shade500]
+                              : [Colors.black, Colors.grey.shade600],
+                          begin: Alignment.centerLeft,
+                          end: Alignment.centerRight,
+                        ).createShader(bounds);
+                      },
+                      child: const Text(
+                        'Be the first to post something!',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white, // This is masked by the gradient
+                        ),
+                      ),
+                    ),
+
+                    // const SizedBox(height: 10), // Spacing
+                    const SizedBox(height: 30), // Spacing
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.push(context, SlideUpNavigationAnimation(child: CreatePostPage()));
+                      },
+                      icon: const Icon(FlutterRemix.add_circle_line, color: Colors.black),
+                      label: Text(
+                        'Create a Post',
+                        style: TextStyle(color:Colors.black),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
             }
 
             return ListView.builder(
               itemCount: posts.length,
-              itemBuilder: (context, index) {
-                return PostTile(model: posts[index]);
-              },
+              itemBuilder: (context, index) => PostCard(post: posts[index]!),
             );
           },
         );
@@ -151,8 +189,7 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  // function to build the list of users for new users
-  Widget _buildUserGrid() {
+  Widget _buildUserGrid(BuildContext context) {
     return StreamBuilder<List<Map<String, dynamic>>>(
       stream: FirebaseFirestore.instance
           .collection('users')
@@ -170,29 +207,28 @@ class HomePage extends StatelessWidget {
           return Center(child: Text('Error: ${snapshot.error}'));
         }
 
-        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+        final users = snapshot.data ?? [];
+        if (users.isEmpty) {
           return const Center(child: Text('No users found.'));
         }
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Stylish Heading
             Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 15.0, vertical: 15.0),
+              padding: const EdgeInsets.all(15.0),
               child: Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
                       Theme.of(context).colorScheme.primary,
                       Theme.of(context).colorScheme.inversePrimary,
-                    ], // Gradient colors
+                    ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.circular(15),
-                  boxShadow: [
+                  boxShadow: const [
                     BoxShadow(
                       color: Colors.black26,
                       blurRadius: 5,
@@ -201,8 +237,8 @@ class HomePage extends StatelessWidget {
                   ],
                 ),
                 padding: const EdgeInsets.all(12.0),
-                child: Text(
-                  'New Faces to Discover!', // The heading text
+                child: const Text(
+                  'New Faces to Discover!',
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w600,
@@ -219,7 +255,6 @@ class HomePage extends StatelessWidget {
                 ),
               ),
             ),
-            // GridView.builder
             Expanded(
               child: GridView.builder(
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -227,9 +262,9 @@ class HomePage extends StatelessWidget {
                   crossAxisSpacing: 5,
                   mainAxisSpacing: 5,
                 ),
-                itemCount: snapshot.data!.length,
+                itemCount: users.length,
                 itemBuilder: (context, index) {
-                  var userData = snapshot.data![index];
+                  final userData = users[index];
                   return UserGrid(
                     userId: userData['uid'],
                     userName: userData['name'],
@@ -243,11 +278,6 @@ class HomePage extends StatelessWidget {
       },
     );
   }
-
-
-
-
-
   /*
   ======> buildUserList() and _buildUserListItem() in comments below if needed👍🏻
   */

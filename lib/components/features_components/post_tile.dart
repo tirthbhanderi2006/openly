@@ -1,423 +1,289 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_remix/flutter_remix.dart';
+import 'package:get/get.dart';
 import 'package:flutter/material.dart';
-import 'package:mithc_koko_chat_app/components/widgets_components/my_textfield.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:mithc_koko_chat_app/components/chat_components/full_image_preview.dart';
 import 'package:mithc_koko_chat_app/components/features_components/post_header_widget.dart';
-import 'package:mithc_koko_chat_app/model/comments_model.dart';
-import 'package:mithc_koko_chat_app/services/features_services/post_services.dart';
-import 'package:mithc_koko_chat_app/utils/themes/theme_provider.dart';
-import '../../model/post_model.dart';
+import 'package:mithc_koko_chat_app/controllers/post_controller.dart';
+import 'package:mithc_koko_chat_app/model/post_model.dart';
+import 'package:mithc_koko_chat_app/utils/page_transition/slide_right_page_transition.dart';
 
-class PostTile extends StatefulWidget {
-  final PostModel model;
+class PostCard extends StatelessWidget {
+  final PostModel post;
 
-  const PostTile({super.key, required this.model});
-
-  @override
-  State<PostTile> createState() => _PostTileState();
-}
-
-class _PostTileState extends State<PostTile> with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
-  bool showHeart = false;
-  bool isDark = ThemeProvider().isDarkMode;
-  final TextEditingController _commentController = TextEditingController();
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 500),
-    )..addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        Future.delayed(const Duration(milliseconds: 500), () {
-          setState(() {
-            showHeart = false;
-          });
-          _controller.reset();
-        });
-      }
-    });
-    _animation = Tween<double>(begin: 0.5, end: 1)
-        .chain(CurveTween(curve: Curves.fastLinearToSlowEaseIn))
-        .animate(_controller);
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    _commentController.dispose();
-    super.dispose();
-  }
-
-  void handleDoubleTap() {
-    setState(() {
-      showHeart = true;
-    });
-    _controller.forward();
-    PostServices().toggleLike(
-      postId: widget.model.postId,
-      userId: FirebaseAuth.instance.currentUser!.uid,
-    );
-  }
-
-  Future<void> addComment(BuildContext context) async {
-    final comment = CommentsModel(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      postId: widget.model.postId,
-      userId: FirebaseAuth.instance.currentUser!.uid,
-      userName: await getCurrentUserName(),
-      text: _commentController.text,
-      timeStamp: DateTime.now(),
-    );
-
-    if (_commentController.text.isNotEmpty) {
-      await PostServices().addComments(postId: widget.model.postId, comment: comment);
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Comment added")));
-      _commentController.clear();
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("You cannot add an empty comment")));
-    }
-  }
-
-  void openCommentSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (BuildContext context) {
-        return DraggableScrollableSheet(
-          expand: false,
-          initialChildSize: 0.8, // Start height as a fraction of the screen
-          minChildSize: 0.5, // Minimum height
-          maxChildSize: 1, // Maximum height
-          builder: (BuildContext context, ScrollController scrollController) {
-            final isDark = Theme.of(context).brightness == Brightness.dark;
-
-            return Padding(
-              padding: EdgeInsets.only(
-                left: 15,
-                right: 15,
-                top: 10,
-                bottom: MediaQuery.of(context).viewInsets.bottom, // Adjust for keyboard
-              ),
-              child: Column(
-                children: [
-                  // Header
-                  Container(
-                    height: 4,
-                    width: 40,
-                    margin: const EdgeInsets.only(bottom: 10),
-                    decoration: BoxDecoration(
-                      color: isDark ? Colors.grey[600] : Colors.grey[300],
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  Text(
-                    'Comments',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: isDark ? Colors.white : Colors.black,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  // Comments List
-                  Expanded(
-                    child: StreamBuilder<DocumentSnapshot>(
-                      stream: FirebaseFirestore.instance
-                          .collection('posts')
-                          .doc(widget.model.postId)
-                          .snapshots(),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
-                          return const Center(child: CircularProgressIndicator());
-                        }
-                        if (snapshot.hasError || !snapshot.hasData) {
-                          return Center(
-                            child: Text(
-                              'Error loading comments.',
-                              style: TextStyle(color: isDark ? Colors.white : Colors.black),
-                            ),
-                          );
-                        }
-
-                        final commentsData =
-                            snapshot.data!.get('comments') as List<dynamic>? ?? [];
-                        final comments = commentsData.map((commentData) {
-                          return CommentsModel.fromJson(
-                              commentData as Map<String, dynamic>);
-                        }).toList();
-
-                        if (comments.isEmpty) {
-                          return Center(
-                            child: Text(
-                              'No comments yet.',
-                              style: TextStyle(color: isDark ? Colors.white : Colors.black),
-                            ),
-                          );
-                        }
-
-                        return ListView.builder(
-                          controller: scrollController,
-                          itemCount: comments.length,
-                          itemBuilder: (context, index) {
-                            final comment = comments[index];
-                            return GestureDetector(
-                              onLongPress: () {
-                                showDialog(context: context, builder: (context) {
-                                  return widget.model.userId==FirebaseAuth.instance.currentUser!.uid || comment.userId == FirebaseAuth.instance.currentUser!.uid ? AlertDialog(
-                                    title: Text("Delete comment"),
-                                    content: Text("Are you sure you want to delete this comment?"),
-                                    actions: [
-                                      TextButton(onPressed: (){
-                                        PostServices().deleteComment(postId: widget.model.postId, commentId: comment.id);
-                                        Navigator.pop(context);
-                                      }, child: Text("Delete",style: TextStyle(color: Colors.red),)),
-                                      TextButton(onPressed: ()=>Navigator.pop(context), child: Text("cancel"))
-                                    ],
-                                  ):const SizedBox.shrink();
-                                },);
-                              },
-                              child: ListTile(
-                                leading: FutureBuilder<String>(
-                                  future: getCurrentUserImage(comment.userId ==
-                                      FirebaseAuth.instance.currentUser!.uid
-                                      ? FirebaseAuth.instance.currentUser!.uid
-                                      : comment.userId),
-                                  builder: (context, snapshot) {
-                                    if (snapshot.connectionState == ConnectionState.waiting) {
-                                      return CircleAvatar(
-                                        backgroundColor: isDark
-                                            ? Colors.grey[700]
-                                            : Colors.grey[300],
-                                        radius: 20,
-                                        child: const CircularProgressIndicator(),
-                                      );
-                                    }
-                                    if (snapshot.hasError ||
-                                        !snapshot.hasData ||
-                                        snapshot.data == 'No user found') {
-                                      return CircleAvatar(
-                                        backgroundColor:
-                                        isDark ? Colors.grey[700] : Colors.grey,
-                                        radius: 20,
-                                        child: Icon(Icons.person,
-                                            color: isDark ? Colors.white : Colors.black),
-
-                                      );
-                                    }
-                                    return CircleAvatar(
-                                      backgroundImage: NetworkImage(snapshot.data!),
-                                      radius: 20,
-                                    );
-                                  },
-                                ),
-                                title: Text(
-                                  comment.userId ==
-                                      FirebaseAuth.instance.currentUser!.uid
-                                      ? '${comment.userName}(you)'
-                                      : comment.userName,
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                    color: isDark ? Colors.white : Colors.black,
-                                  ),
-                                ),
-                                subtitle: Text(
-                                  comment.text,
-                                  style: TextStyle(
-                                    color: isDark ? Colors.grey[300] : Colors.black,
-                                  ),
-                                ),
-                                trailing: Text(
-                                  '${comment.timeStamp.toLocal()}'.split(' ')[0],
-                                  style: TextStyle(
-                                    color: isDark ? Colors.grey[500] : Colors.grey[600],
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                        );
-                      },
-                    ),
-                  ),
-                  // Add Comment Section
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 8.0),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: MyTextfield(
-                            hintText: 'Write a comment...',
-                            obscureText: false,
-                            controller: _commentController,
-                            focusNode: null,
-                            hintStyle: TextStyle(
-                                color: isDark ? Colors.grey[400] : Colors.grey[700]),
-                            fillColor: isDark ? Colors.grey[800] : Colors.grey[200],
-                            textColor: isDark ? Colors.white : Colors.black,
-                          ),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.send),
-                          color: isDark ? Colors.white : Colors.black,
-                          onPressed: () async {
-                            await addComment(context);
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
+  PostCard({
+    required this.post,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final PostController controller =
+        Get.put(PostController(post), tag: post.postId);
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 10),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(15),
-          boxShadow: [
-            BoxShadow(
-              color: isDarkMode ? Colors.black54 : Colors.grey.withOpacity(0.5),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
+    // Retrieve the current theme's colors
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            colorScheme.background.withOpacity(0.8),
+            colorScheme.surface.withOpacity(0.8),
           ],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 10,
+            spreadRadius: 2,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      child: Card(
+        color: Colors.transparent, // Make the card transparent
+        elevation: 0, // Remove elevation since the container has a shadow
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header
+            // Post Header (Profile Info)
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8),
-              child:  ProfileWidget(
-                userId: widget.model.userId,
-                userName: widget.model.userName,
-                postId: widget.model.postId,
+              padding: const EdgeInsets.all(12.0),
+              child: ProfileWidget(
+                userId: post.userId,
+                userName: post.userName,
+                postId: post.postId,
+                postedOn: post.timeStamp.toLocal().toString().split(' ')[0],
               ),
             ),
-            // Post Image
-            GestureDetector(
-              onDoubleTap: handleDoubleTap,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  ClipRRect(
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(15),
-                      topRight: Radius.circular(15),
-                    ),
-                    // ignore: sized_box_for_whitespace
-                    child: Container(
-                      height: 300,
-                      child: Image.network(
-                        widget.model.imgUrl,
+
+            // Post Image with Gradient Overlay
+            Stack(
+              alignment: Alignment.bottomCenter,
+              children: [
+                GestureDetector(
+                  onTap: () => Navigator.push(
+                      context,
+                      SlideRightPageTransition(
+                          child: FullScreenImage(
+                        imageUrl: post.imgUrl,
+                        caption: post.caption,
+                      ))),
+                  onDoubleTap: () => controller.toggleLike(
+                    postId: post.postId,
+                    userId: FirebaseAuth.instance.currentUser!.uid,
+                  ),
+                  child: ClipRRect(
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(20)),
+                    child: GestureDetector(
+                      onDoubleTap: () => controller.toggleLike(
+                        postId: post.postId,
+                        userId: FirebaseAuth.instance.currentUser!.uid,
+                      ),
+                      child: CachedNetworkImage(
+                        imageUrl: post.imgUrl,
                         fit: BoxFit.cover,
-                        height: 300,
                         width: double.infinity,
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) {
-                            return child;
-                          } else {
-                            return Center(
-                              child: CircularProgressIndicator(
-                                value: loadingProgress.expectedTotalBytes != null
-                                    ? loadingProgress.cumulativeBytesLoaded /
-                                    (loadingProgress.expectedTotalBytes ?? 1)
-                                    : null,
-                              ),
-                            );
-                          }
+                        height: 450,
+                        progressIndicatorBuilder: (context, url, progress) {
+                          return Center(
+                            child: CircularProgressIndicator(
+                              value: progress.progress,
+                              color: colorScheme.secondary,
+                            ),
+                          );
                         },
                       ),
                     ),
                   ),
-                  if (showHeart)
-                    ScaleTransition(
-                      scale: _animation,
-                      child: const Icon(
-                        Icons.favorite,
-                        color: Colors.white,
-                        size: 100,
-                      ),
+                ),
+                // Gradient Overlay
+                Container(
+                  height: 100,
+                  decoration: BoxDecoration(
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(20)),
+                    gradient: LinearGradient(
+                      begin: Alignment.bottomCenter,
+                      end: Alignment.topCenter,
+                      colors: [
+                        Colors.black.withOpacity(0.7),
+                        Colors.transparent,
+                      ],
                     ),
+                  ),
+                ),
+              ],
+            ),
+
+            // Interaction Bar
+            Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+              child: Row(
+                children: [
+                  // Like Button with Animation
+                  Obx(() => AnimatedScale(
+                        scale: controller.isLiked.value ? 1.2 : 1.0,
+                        duration: const Duration(milliseconds: 200),
+                        child: IconButton(
+                          icon: Icon(
+                            controller.isLiked.value
+                                ? FlutterRemix.heart_3_fill
+                                : FlutterRemix.heart_3_line,
+                            color: controller.isLiked.value
+                                ? Colors.red
+                                : colorScheme.onSurface,
+                          ),
+                          onPressed: () => controller.toggleLike(
+                            postId: post.postId,
+                            userId: FirebaseAuth.instance.currentUser!.uid,
+                          ),
+                        ),
+                      )),
+                  // Comment Button
+                  IconButton(
+                    icon: Icon(
+                      FlutterRemix.chat_3_line,
+                      color: colorScheme.onSurface,
+                    ),
+                    onPressed: () {
+                      controller.openCommentSheet(context);
+                    },
+                  ),
+                  // Share Button
+                  IconButton(
+                    icon: Obx(() {
+                      // Dynamically update the button based on state
+                      if (controller.isDownloading.value) {
+                        return SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            color: colorScheme.onSurface,
+                            strokeWidth: 2,
+                          ),
+                        );
+                      } else if (controller.isDownloadComplete.value) {
+                        return Icon(Icons.check, color: Colors.green);
+                      } else {
+                        return Icon(FlutterRemix.download_line,
+                            color: colorScheme.onSurface);
+                      }
+                    }),
+                    onPressed: () {
+                      if (!controller.isDownloading.value) {
+                        controller.downloadImage(
+                            imgurl: post.imgUrl, context: context);
+                      }
+                    },
+                  ),
+
+                  const Spacer(),
+                  // Bookmark Button
+                  Obx(() => IconButton(
+                        icon: Icon(
+                          controller.isBookmarked.value
+                              ? FlutterRemix.bookmark_3_fill
+                              : FlutterRemix.bookmark_3_line,
+                          color: colorScheme.onSurface,
+                        ),
+                        onPressed: () => !controller.isBookmarked.value
+                            ? controller.addBookmark(model: post,context:context)
+                            : controller.removeBookmark(postId: post.postId,context:context),
+                      )),
                 ],
               ),
             ),
-            // Actions
+
+            // Post Caption with Better Typography
             Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      IconButton(
-                        onPressed: () {
-                          PostServices().toggleLike(
-                            postId: widget.model.postId,
-                            userId: FirebaseAuth.instance.currentUser!.uid,
-                          );
-                        },
-                        icon: Icon(
-                          widget.model.likes.contains(FirebaseAuth.instance.currentUser!.uid)
-                              ? Icons.favorite
-                              : Icons.favorite_border,
-                          color: Colors.red,
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+              child: Container(
+                constraints: BoxConstraints(
+                  maxHeight: MediaQuery.of(context).size.height *
+                      0.058, // Fixed max height
+                ),
+                child: SingleChildScrollView(
+                  child: RichText(
+                    text: TextSpan(
+                      style: TextStyle(
+                        color: colorScheme.onSurface,
+                        fontSize: 14,
+                        height: 1.5, // Improved line height
+                      ),
+                      children: [
+                        TextSpan(
+                          text: post.userName,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontFamily: GoogleFonts.poppins().fontFamily,
+                            color: colorScheme.primary, // Highlight username
+                          ),
                         ),
-                      ),
-                      Text(
-                        widget.model.likes.length.toString(),
-                        style: Theme.of(context).textTheme.bodyLarge,
-                      ),
-                      const SizedBox(width: 20),
-                      IconButton(
-                        onPressed: () => openCommentSheet(context),
-                        icon: const Icon(Icons.comment_outlined),
-                      ),
-                      Text(
-                        widget.model.comments.length.toString(),
-                        style: Theme.of(context).textTheme.bodyLarge,
-                      ),
-                      const Spacer(),
-                      IconButton(
-                        onPressed: () {
-                          // Handle share action
-                        },
-                        icon: const Icon(Icons.share_outlined),
-                      ),
-                    ],
-                  ),
-                  if (widget.model.caption.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: Text(
-                        widget.model.caption,
-                        style: Theme.of(context).textTheme.bodyMedium!.copyWith(color: Colors.grey),
-                      ),
+                        const TextSpan(text: ' '),
+                        TextSpan(
+                          text: post.caption,
+                        ),
+                      ],
                     ),
+                  ),
+                ),
+              ),
+            ),
+
+            // Add a subtle divider
+            Divider(
+              height: 1,
+              thickness: 0.5,
+              color: colorScheme.onSurface.withOpacity(0.1),
+              indent: 12,
+              endIndent: 12,
+            ),
+
+            // Like and Comment Count
+            Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+              child: Row(
+                children: [
+                  Icon(
+                    FlutterRemix.heart_3_fill,
+                    color: Colors.red,
+                    size: 16,
+                  ),
+                  const SizedBox(width: 4),
                   Text(
-                      'Posted on ${'${widget.model.timeStamp.toLocal()}'.split(' ')[0]}',
-                       style: Theme.of(context).textTheme.bodySmall,
+                    '${post.likes.length} likes',
+                    style: TextStyle(
+                      color: colorScheme.onSurface.withOpacity(0.8),
+                      fontSize: 12,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Icon(
+                    FlutterRemix.chat_3_fill,
+                    color: colorScheme.onSurface.withOpacity(0.8),
+                    size: 16,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    '${post.comments.length} comments',
+                    style: TextStyle(
+                      color: colorScheme.onSurface.withOpacity(0.8),
+                      fontSize: 12,
+                    ),
                   ),
                 ],
               ),
@@ -426,42 +292,5 @@ class _PostTileState extends State<PostTile> with SingleTickerProviderStateMixin
         ),
       ),
     );
-
-  }
-
-
-
-
-
-  // Function to get the current user's profile picture URL
-  Future<String> getCurrentUserImage(String userId) async {
-    try {
-      DocumentSnapshot snapshot = await FirebaseFirestore.instance.collection('users').doc(userId).get();
-
-      if (snapshot.exists) {
-        var userDetails = snapshot.data() as Map<String, dynamic>;
-        return userDetails["profilePic"] ?? '';
-      } else {
-        return 'No user found';
-      }
-    } catch (e) {
-      return 'Error fetching profile picture';
-    }
-  }
-// function to get the current user's username
-  Future<String> getCurrentUserName() async {
-    try {
-      var userId = FirebaseAuth.instance.currentUser!.uid;
-      DocumentSnapshot snapshot = await FirebaseFirestore.instance.collection('users').doc(userId).get();
-
-      if (snapshot.exists) {
-        var userDetails = snapshot.data() as Map<String, dynamic>;
-        return userDetails["name"] ?? 'No username found';
-      } else {
-        return 'No user found';
-      }
-    } catch (e) {
-      return 'Error fetching username';
-    }
   }
 }

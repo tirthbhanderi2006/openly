@@ -25,15 +25,15 @@ class _UsersPageState extends State<UsersPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.background,
-      appBar: AppBar(
-        title: const Text(
-          "C H A T",
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        centerTitle: true,
-        backgroundColor: Colors.transparent,
-        foregroundColor: Theme.of(context).colorScheme.primary,
-      ),
+      // appBar: AppBar(
+      //   title: const Text(
+      //     "C H A T",
+      //     style: TextStyle(fontWeight: FontWeight.bold),
+      //   ),
+      //   centerTitle: true,
+      //   backgroundColor: Colors.transparent,
+      //   foregroundColor: Theme.of(context).colorScheme.primary,
+      // ),
       body: _buildUsersList(),
     );
   }
@@ -62,7 +62,8 @@ class _UsersPageState extends State<UsersPage> {
 
         // Apply delay before showing actual data
         return FutureBuilder(
-          future: Future.delayed(const Duration(milliseconds:1000), () => snapshot.data!),
+          future: Future.delayed(
+              const Duration(milliseconds: 1000), () => snapshot.data!),
           builder: (context, futureSnapshot) {
             if (futureSnapshot.connectionState == ConnectionState.waiting) {
               // Show skeleton loader during delay
@@ -81,7 +82,8 @@ class _UsersPageState extends State<UsersPage> {
     );
   }
 
-  Widget _buildUsersListItem(Map<String, dynamic> userData, BuildContext context) {
+  Widget _buildUsersListItem(
+      Map<String, dynamic> userData, BuildContext context) {
     return UserTile(
       userId: userData['uid'],
       text: userData['email'],
@@ -107,9 +109,12 @@ class _UsersPageState extends State<UsersPage> {
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
           child: Skeletonizer(
-            enabled: true,
-            child: UserTile(text: "users email id", onTap: (){}, userId: "userId", imgUrl: "https://www.gravatar.com/avatar/?d=identicon")
-          ),
+              enabled: true,
+              child: UserTile(
+                  text: "users email id",
+                  onTap: () {},
+                  userId: "userId",
+                  imgUrl: "https://www.gravatar.com/avatar/?d=identicon")),
         );
       },
     );

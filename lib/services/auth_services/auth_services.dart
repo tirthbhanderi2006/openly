@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:mithc_koko_chat_app/pages/auth/login_or_register.dart';
 import 'package:mithc_koko_chat_app/model/user_model.dart';
 
@@ -13,14 +14,18 @@ class AuthService {
   Future<void> signIn({required String email, required String password}) async {
     try {
       // Perform login with Firebase Authentication
-      await FirebaseAuth.instance.signInWithEmailAndPassword(email: email, password: password);
+      await FirebaseAuth.instance
+          .signInWithEmailAndPassword(email: email, password: password);
       // Get the current user ID
       String userId = FirebaseAuth.instance.currentUser!.uid;
       // Get the FCM token
       String? fcmToken = await FirebaseMessaging.instance.getToken();
       if (fcmToken != null) {
         // Save the FCM token to Firestore under the user's document
-        await FirebaseFirestore.instance.collection('users').doc(userId).update({
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(userId)
+            .update({
           'fcmToken': fcmToken,
         });
       }
@@ -36,7 +41,7 @@ class AuthService {
     required String name,
     required String profilePic,
   }) async {
-    final String defaultName =email.split('@')[0];
+    final String defaultName = email.split('@')[0];
     try {
       UserCredential credential = await _auth.createUserWithEmailAndPassword(
         email: email,
@@ -45,17 +50,16 @@ class AuthService {
       // Add user details to Firestore
       await _firestore.collection("users").doc(credential.user!.uid).set(
           UserModel(
-              uid: credential.user!.uid,
-              email: email,
-              name: defaultName,
-              profilePic: 'https://www.gravatar.com/avatar/?d=identicon',
-              bio: '',
-              followers: [],
-              following: [],
-              fcmToken: await _getFCMToken().toString(),
-              createdAt: Timestamp.now()
-          ).toMap()
-      );
+                  uid: credential.user!.uid,
+                  email: email,
+                  name: defaultName,
+                  profilePic: 'https://www.gravatar.com/avatar/?d=identicon',
+                  bio: '',
+                  followers: [],
+                  following: [],
+                  fcmToken: await _getFCMToken().toString(),
+                  createdAt: Timestamp.now())
+              .toMap());
       // await _firestore.collection('users').doc(credential.user!.uid).set({
       //   'uid': credential.user!.uid,
       //   'email': email,
@@ -78,17 +82,22 @@ class AuthService {
     return token;
   }
 
-
   // Sign Out
-  Future<void> signOut(context) async {
+  Future<void> logout(context) async {
     try {
-      await _auth.signOut();
-      Navigator.push(context, MaterialPageRoute(builder: (context) => LoginOrRegister(),));
+      if (_auth.currentUser != null) {
+        await _auth.signOut();
+      }
+      Get.offAll(() => LoginOrRegister());
+      Get.snackbar('Logout', 'Logout Successfully',
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM);
     } catch (e) {
-      throw Exception('Error signing out: $e');
+      Get.snackbar('Error', 'Error signing out: $e',
+          backgroundColor: Colors.red, colorText: Colors.white);
     }
   }
-
 
 //   get current user details
   Future<Map<String, dynamic>?> getUserDetails() async {
@@ -101,7 +110,7 @@ class AuthService {
       // Reference to the user's document in Firestore
       final userDoc = await FirebaseFirestore.instance
           .collection(
-          'users') // Replace 'users' with your Firestore collection name
+              'users') // Replace 'users' with your Firestore collection name
           .doc(userId)
           .get();
       // Check if the document exists

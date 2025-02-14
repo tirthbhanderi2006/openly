@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:mithc_koko_chat_app/pages/profile/profile_page.dart';
 import 'package:mithc_koko_chat_app/utils/page_transition/slide_up_page_transition.dart';
@@ -53,8 +54,8 @@ class UserGrid extends StatelessWidget {
                       padding: const EdgeInsets.all(5.0),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(100),
-                        child: Image.network(
-                          userImage,
+                        child: CachedNetworkImage(
+                          imageUrl:userImage,
                           fit: BoxFit.cover,
                           height: 80,
                           width: 80,

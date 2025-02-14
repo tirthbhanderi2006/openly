@@ -1,8 +1,10 @@
 import 'dart:io';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_remix/flutter_remix.dart';
+import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mithc_koko_chat_app/components/widgets_components/my_textfield.dart';
 import 'package:mithc_koko_chat_app/services/features_services/storage_services.dart';
@@ -19,26 +21,29 @@ class _EditProfilePageState extends State<EditProfilePage> {
   final TextEditingController _nameController = TextEditingController();
   String? _profilePicUrl;
   bool _isUpdating = false;
+  final GlobalKey<FormState> _formKey =
+      GlobalKey<FormState>(); // Form key for validation
 
-  // Select and upload a profile picture
   Future<void> _selectProfilePicture() async {
     try {
-      final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
+      final pickedFile =
+          await ImagePicker().pickImage(source: ImageSource.gallery);
 
       if (pickedFile != null) {
         File imageFile = File(pickedFile.path);
 
-        // Show loading indicator while uploading
         setState(() => _isUpdating = true);
 
-        // Upload image to Firebase Storage
-        String downloadUrl = await StorageService().uploadImage(imageFile, 'profilePictures');
+        String downloadUrl =
+            await StorageService().uploadImage(imageFile, 'profilePictures');
 
-        // Update profile picture in Firestore
         final String? userId = FirebaseAuth.instance.currentUser?.uid;
         if (userId == null) throw Exception("No user is currently signed in.");
 
-        await FirebaseFirestore.instance.collection('users').doc(userId).update({
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(userId)
+            .update({
           'profilePic': downloadUrl,
         });
 
@@ -47,50 +52,66 @@ class _EditProfilePageState extends State<EditProfilePage> {
           _isUpdating = false;
         });
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Profile picture updated successfully!')),
-        );
+        // ScaffoldMessenger.of(context).showSnackBar(
+        //   const SnackBar(
+        //       content: Text('Profile picture updated successfully!')),
+        // );
+        Get.snackbar("Profile", "Profile picture updated successfully!",
+            snackPosition: SnackPosition.BOTTOM);
       }
     } catch (e) {
       setState(() => _isUpdating = false);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to update profile picture: $e')),
-      );
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   SnackBar(content: Text('Failed to update profile picture: $e')),
+      // );
+      Get.snackbar("Profile", "Failed to update profile picture: $e",
+          snackPosition: SnackPosition.BOTTOM);
     }
   }
 
-  // Update bio and profile picture in Firestore
   Future<void> _updateProfile() async {
-    try {
-      setState(() => _isUpdating = true);
+    if (_formKey.currentState!.validate()) {
+      try {
+        setState(() => _isUpdating = true);
 
-      final String? userId = FirebaseAuth.instance.currentUser?.uid;
-      if (userId == null) throw Exception("No user is currently signed in.");
+        final String? userId = FirebaseAuth.instance.currentUser?.uid;
+        if (userId == null) throw Exception("No user is currently signed in.");
 
-      if(_nameController.text.isNotEmpty) {
-        await FirebaseFirestore.instance.collection('users').doc(userId).update(
-            {
-              'bio': _bioTextController.text.trim(),
-              'name': _nameController.text.trim(),
-              if (_profilePicUrl != null) 'profilePic': _profilePicUrl,
-            });
+        if (_nameController.text.isNotEmpty) {
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(userId)
+              .update({
+            'bio': _bioTextController.text.trim(),
+            'name': _nameController.text.trim(),
+            if (_profilePicUrl != null) 'profilePic': _profilePicUrl,
+          });
 
+          setState(() => _isUpdating = false);
+          // ScaffoldMessenger.of(context).showSnackBar(
+          //   const SnackBar(content: Text('Profile updated successfully!')),
+          // );
+          Get.snackbar("Profile", "Profile updated successfully!",
+              snackPosition: SnackPosition.BOTTOM);
+
+          Navigator.pop(context);
+        } else {
+          // ScaffoldMessenger.of(context).showSnackBar(
+          //   const SnackBar(content: Text("Username can't be empty")),
+          // );
+          Get.snackbar("Profile", "Username can't be empty",
+              colorText: Colors.red);
+        }
+      } catch (e) {
         setState(() => _isUpdating = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Profile updated successfully!')),
-        );
 
-        Navigator.pop(context);
-      }else{
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("username can't be empty")));
+        // ScaffoldMessenger.of(context).showSnackBar(
+        //   SnackBar(content: Text('Failed to update profile: $e')),
+        // );
+        Get.snackbar("Profile", "Failed to update profile: $e",
+            snackPosition: SnackPosition.BOTTOM);
       }
-    } catch (e) {
-      setState(() => _isUpdating = false);
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to update profile: $e')),
-      );
     }
   }
 
@@ -115,6 +136,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       backgroundColor: theme.background,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
+        elevation: 0,
         foregroundColor: theme.primary,
         title: const Text(
           'Edit Profile',
@@ -129,7 +151,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
         ],
       ),
       body: StreamBuilder<DocumentSnapshot>(
-        stream: FirebaseFirestore.instance.collection('users').doc(userId).snapshots(),
+        stream: FirebaseFirestore.instance
+            .collection('users')
+            .doc(userId)
+            .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(
@@ -155,7 +180,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
             );
           }
 
-          final Map<String, dynamic> userDetails = snapshot.data!.data() as Map<String, dynamic>;
+          final Map<String, dynamic> userDetails =
+              snapshot.data!.data() as Map<String, dynamic>;
 
           _bioTextController.text = _bioTextController.text.isEmpty
               ? userDetails['bio'] ?? ''
@@ -170,70 +196,122 @@ class _EditProfilePageState extends State<EditProfilePage> {
           return SingleChildScrollView(
             child: Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  GestureDetector(
-                    onTap: _isUpdating ? null : _selectProfilePicture,
-                    child: Container(
-                      height: 120,
-                      width: 120,
-                      decoration: BoxDecoration(
-                        color: theme.secondary,
-                        borderRadius: BorderRadius.circular(60),
-                        image: _profilePicUrl != null
-                            ? DecorationImage(
-                          image: NetworkImage(_profilePicUrl!),
-                          fit: BoxFit.cover,
-                        )
-                            : const DecorationImage(
-                          image: NetworkImage('https://www.gravatar.com/avatar/?d=identicon'),
-                          fit: BoxFit.cover,
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // Profile Picture Section
+                    GestureDetector(
+                      onTap: _isUpdating ? null : _selectProfilePicture,
+                      child: Container(
+                        height: 150,
+                        width: 150,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: LinearGradient(
+                            colors: [
+                              theme.primary.withOpacity(0.2),
+                              theme.secondary.withOpacity(0.2)
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: theme.primary.withOpacity(0.2),
+                              blurRadius: 10,
+                              offset: const Offset(0, 5),
+                            ),
+                          ],
+                        ),
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            if (_profilePicUrl != null)
+                              CircleAvatar(
+                                radius: 70,
+                                backgroundImage:
+                                    CachedNetworkImageProvider(_profilePicUrl!),
+                              )
+                            else
+                              Icon(
+                                Icons.person,
+                                size: 80,
+                                color: theme.primary,
+                              ),
+                            if (!_isUpdating)
+                              Positioned(
+                                bottom: 0,
+                                right: 0,
+                                child: Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: theme.primary,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(
+                                    Icons.edit,
+                                    size: 20,
+                                    color: theme.onPrimary,
+                                  ),
+                                ),
+                              ),
+                          ],
                         ),
                       ),
-                      child: _profilePicUrl == null
-                          ? Icon(
-                        Icons.person,
-                        size: 72,
+                    ),
+                    const SizedBox(height: 30),
+                    // Name Section
+                    Text(
+                      "Name",
+                      style: TextStyle(
                         color: theme.primary,
-                      )
-                          : null,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    "Name",
-                    style: TextStyle(
-                      color: theme.primary,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                    const SizedBox(height: 10),
+                    MyTextfield(
+                      editable: !_isUpdating,
+                      hintText: "Add your name",
+                      obscureText: false,
+                      controller: _nameController,
+                      focusNode: null,
+                      textColor: theme.onBackground,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your name';
+                        }
+                        if (value.length < 4) {
+                          return 'minimum length should be 4';
+                        }
+                        return null;
+                      },
                     ),
-                  ),
-                  const SizedBox(height: 10),
-                  MyTextfield(
-                    hintText: "add your name",
-                    obscureText: false,
-                    controller: _nameController,
-                    focusNode: null, textColor: Theme.of(context).colorScheme.onBackground,
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    "Bio",
-                    style: TextStyle(
-                      color: theme.primary,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                    const SizedBox(height: 20),
+
+                    // Bio Section
+                    Text(
+                      "Bio",
+                      style: TextStyle(
+                        color: theme.primary,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 10),
-                  MyTextfield(
-                    hintText: "Write something about yourself...",
-                    obscureText: false,
-                    controller: _bioTextController,
-                    focusNode: null, textColor: Theme.of(context).colorScheme.onBackground,
-                  ),
-                  const SizedBox(height: 20),
-                ],
+                    const SizedBox(height: 10),
+                    MyTextfield(
+                      editable: !_isUpdating,
+                      hintText: "Write something about yourself...",
+                      obscureText: false,
+                      controller: _bioTextController,
+                      focusNode: null,
+                      textColor: theme.onBackground,
+                    ),
+                    const SizedBox(height: 30),
+                  ],
+                ),
               ),
             ),
           );

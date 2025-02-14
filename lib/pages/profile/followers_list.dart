@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:get/get.dart';
 import 'package:mithc_koko_chat_app/services/chat_services/chat_services.dart';
 import 'package:mithc_koko_chat_app/utils/page_transition/slide_up_page_transition.dart';
 import 'package:mithc_koko_chat_app/pages/chat/chat_page.dart';
@@ -117,13 +118,14 @@ class FollowersList extends StatelessWidget {
                                 );
                               } else {
                                 // Show a Snackbar if the user is not following
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                        'You are not following ${userData['name']}'),
-                                    backgroundColor: Colors.redAccent,
-                                  ),
-                                );
+                                // ScaffoldMessenger.of(context).showSnackBar(
+                                //   SnackBar(
+                                //     content: Text(
+                                //         'You are not following ${userData['name']}'),
+                                //     backgroundColor: Colors.redAccent,
+                                //   ),
+                                // );
+                                Get.snackbar("Chat", "You are not following ${userData['name']}",colorText: Colors.red,snackPosition: SnackPosition.BOTTOM);
                               }
                             },
                             label: "Chat",

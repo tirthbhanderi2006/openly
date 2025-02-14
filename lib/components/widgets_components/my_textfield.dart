@@ -8,16 +8,20 @@ class MyTextfield extends StatelessWidget {
   final TextStyle? hintStyle;
   final Color? fillColor;
   final Color textColor;
+  final bool? editable;
+  final String? Function(String?)? validator; // Corrected validator type
 
   const MyTextfield({
     Key? key,
     required this.hintText,
     required this.obscureText,
     required this.controller,
-    required this.focusNode,
+    this.focusNode,
     this.hintStyle,
     this.fillColor,
     required this.textColor,
+    this.editable,
+    this.validator, // Made optional
   }) : super(key: key);
 
   @override
@@ -26,11 +30,13 @@ class MyTextfield extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 25.0),
-      child: TextField(
+      child: TextFormField(
+        enabled: editable ?? true, // Simplified nullable check
         focusNode: focusNode,
         controller: controller,
         obscureText: obscureText,
         style: TextStyle(color: textColor), // Set text color dynamically
+        validator: validator, // Now works correctly!
         decoration: InputDecoration(
           border: OutlineInputBorder(
             borderSide: BorderSide(color: theme.colorScheme.tertiary),

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:mithc_koko_chat_app/pages/auth/login_or_register.dart';
 
 import '../home_page.dart';
+import '../main_home.dart';
 
 class AuthGate extends StatelessWidget {
   const AuthGate({super.key});
@@ -15,7 +16,8 @@ class AuthGate extends StatelessWidget {
         builder: (context, snapshot) {
         // user loin or not?
         if(snapshot.hasData){
-            return HomePage();
+          return MainHome();
+            // return HomePage();
         }else{
           return LoginOrRegister();
         }

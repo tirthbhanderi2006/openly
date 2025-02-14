@@ -6,7 +6,7 @@ import 'package:mithc_koko_chat_app/pages/profile/profile_page.dart';
 import 'package:mithc_koko_chat_app/pages/features/search_page.dart';
 import 'package:mithc_koko_chat_app/services/auth_services/auth_services.dart';
 import 'package:mithc_koko_chat_app/pages/settings/setting_page.dart';
-import 'package:provider/provider.dart'; // Ensure Provider is used for ThemeProvider
+import 'package:provider/provider.dart';
 import 'package:mithc_koko_chat_app/utils/themes/theme_provider.dart';
 
 class MyDrawer extends StatelessWidget {
@@ -31,7 +31,10 @@ class MyDrawer extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Image.asset('lib/assets/telegram.png',width: 90,),
+                  Image.asset(
+                    'lib/assets/telegram.png',
+                    width: 90,
+                  ),
                   const SizedBox(height: 10),
                   Text(
                     "OPENLY",
@@ -52,7 +55,11 @@ class MyDrawer extends StatelessWidget {
             label: 'P R O F I L E',
             onTap: () {
               Navigator.pop(context); // Close drawer
-              Navigator.push(context, SlideRightPageTransition(child: ProfilePage(userId: FirebaseAuth.instance.currentUser!.uid)));
+              Navigator.push(
+                  context,
+                  SlideRightPageTransition(
+                      child: ProfilePage(
+                          userId: FirebaseAuth.instance.currentUser!.uid)));
             },
             isDark: isDark,
           ),
@@ -76,9 +83,7 @@ class MyDrawer extends StatelessWidget {
             onTap: () {
               Navigator.pop(context); // Close drawer
               Navigator.push(
-                  context,
-                  SlideRightPageTransition(child: SearchPage())
-              );
+                  context, SlideRightPageTransition(child: SearchPage()));
             },
             isDark: isDark,
           ),
@@ -91,9 +96,7 @@ class MyDrawer extends StatelessWidget {
             onTap: () {
               Navigator.pop(context); // Close drawer
               Navigator.push(
-                context,
-                  SlideRightPageTransition(child: SettingPage())
-              );
+                  context, SlideRightPageTransition(child: SettingPage()));
             },
             isDark: isDark,
           ),
@@ -120,13 +123,13 @@ class MyDrawer extends StatelessWidget {
   }
 
   Widget _buildDrawerItem(
-      BuildContext context, {
-        required IconData icon,
-        required String label,
-        required void Function()? onTap,
-        required bool isDark,
-        bool isLogout = false,
-      }) {
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required void Function()? onTap,
+    required bool isDark,
+    bool isLogout = false,
+  }) {
     final colorScheme = Theme.of(context).colorScheme;
 
     return ListTile(
@@ -150,8 +153,6 @@ class MyDrawer extends StatelessWidget {
     );
   }
 
-
-
   void _logout(BuildContext context) {
     // Logout logic with a confirmation dialog
     showDialog(
@@ -169,9 +170,12 @@ class MyDrawer extends StatelessWidget {
           TextButton(
             onPressed: () {
               Navigator.pop(context); // Close dialog
-              AuthService().signOut(context); // Perform sign-out
+              AuthService().logout(context); // Perform sign-out
             },
-            child: const Text('Logout',style: TextStyle(color: Colors.red),),
+            child: const Text(
+              'Logout',
+              style: TextStyle(color: Colors.red),
+            ),
           ),
         ],
       ),

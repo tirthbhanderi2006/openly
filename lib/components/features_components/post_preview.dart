@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:mithc_koko_chat_app/model/post_model.dart';
 
@@ -39,7 +40,7 @@ class PostPreview extends StatelessWidget {
                           child: AnimatedOpacity(
                             opacity: 1.0,
                             duration: Duration(milliseconds: 300),
-                            child: Image.network(posts[index].imgUrl),
+                            child: CachedNetworkImage(imageUrl:posts[index].imgUrl),
                           ),
                         ),
                       ],

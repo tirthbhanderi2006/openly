@@ -1,21 +1,22 @@
-import 'dart:ui';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_remix/flutter_remix.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:get/get.dart';
-import 'package:mithc_koko_chat_app/components/pofile/profile_info.dart';
-import 'package:mithc_koko_chat_app/components/pofile/profile_picture.dart';
-import 'package:mithc_koko_chat_app/components/pofile/profile_post.dart';
-import 'package:mithc_koko_chat_app/components/widgets_components/bio_box.dart';
-import 'package:mithc_koko_chat_app/utils/page_transition/slide_left_page_transition.dart';
+import 'package:lottie/lottie.dart';
+import 'package:mithc_koko_chat_app/components/pofile_components/profile_info.dart';
+import 'package:mithc_koko_chat_app/components/pofile_components/profile_picture.dart';
+import 'package:mithc_koko_chat_app/components/pofile_components/profile_post.dart';
+import 'package:mithc_koko_chat_app/components/pofile_components/bio_box.dart';
+import 'package:mithc_koko_chat_app/controllers/navigation_controller.dart';
+import 'package:mithc_koko_chat_app/pages/profile/show_bookmarks.dart';
+import 'package:mithc_koko_chat_app/pages/settings/setting_page.dart';
+import 'package:mithc_koko_chat_app/services/auth_services/auth_services.dart';
 import 'package:mithc_koko_chat_app/utils/page_transition/slide_right_page_transition.dart';
-import 'package:mithc_koko_chat_app/utils/page_transition/slide_up_page_transition.dart';
 import 'package:mithc_koko_chat_app/pages/chat/chat_page.dart';
-import 'package:mithc_koko_chat_app/pages/profile/followers_list.dart';
-import 'package:mithc_koko_chat_app/services/features_services/post_services.dart';
+import 'package:mithc_koko_chat_app/utils/page_transition/slide_up_page_transition.dart';
 import '../../controllers/profile_controller.dart';
 import '../../main.dart';
-import '../../model/post_model.dart';
 import 'edit_profile_page.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -29,6 +30,8 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> with RouteAware {
   final ProfileController profileController = Get.put(ProfileController());
+  final NavigationController navigationController =
+      Get.find<NavigationController>();
 
   @override
   void initState() {
@@ -49,7 +52,7 @@ class _ProfilePageState extends State<ProfilePage> with RouteAware {
 
   @override
   void dispose() {
-    routeObserver.unsubscribe(this); // Unsubscribe from RouteObserver
+    routeObserver.unsubscribe(this); //  Unsubscribe from RouteObserver
     super.dispose();
   }
 
@@ -66,14 +69,66 @@ class _ProfilePageState extends State<ProfilePage> with RouteAware {
       backgroundColor: Theme.of(context).colorScheme.background,
       appBar: AppBar(
         actions: [
-          if (widget.userId == FirebaseAuth.instance.currentUser!.uid)
-            IconButton(
-              onPressed: () => Navigator.push(
-                context,
-                SlideLeftPageTransition(child: EditProfilePage()),
-              ),
-              icon: const Icon(FlutterRemix.user_settings_line),
+          Padding(
+            padding: const EdgeInsets.only(
+                right: 16.0), // Adjust the right padding for alignment
+            child: SpeedDial(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              direction: SpeedDialDirection.down,
+              animatedIcon: AnimatedIcons.menu_close,
+              foregroundColor: Theme.of(context).colorScheme.inversePrimary,
+              buttonSize: Size(50, 50),
+              children: [
+                // Settings button with smaller icon
+                SpeedDialChild(
+                  child: Icon(
+                    FlutterRemix.settings_5_line,
+                    size: 24,
+                  ),
+                  onTap: () => Navigator.push(
+                    context,
+                    SlideUpNavigationAnimation(child: SettingPage()),
+                  ),
+                ),
+                // Edit Profile button, only visible for the current user
+                if (widget.userId == FirebaseAuth.instance.currentUser!.uid)
+                  SpeedDialChild(
+                    child: Icon(
+                      FlutterRemix.user_settings_line,
+                      size: 24,
+                    ),
+                    onTap: () => Navigator.push(
+                      context,
+                      SlideUpNavigationAnimation(child: EditProfilePage()),
+                    ),
+                  ),
+
+                if (widget.userId == FirebaseAuth.instance.currentUser!.uid)
+                  SpeedDialChild(
+                    child: Icon(
+                      FlutterRemix.bookmark_3_line,
+                      size: 24,
+                    ),
+                    onTap: () => Navigator.push(
+                      context,
+                      SlideUpNavigationAnimation(child: ShowBookmarks()),
+                    ),
+                  ),
+                if (widget.userId == FirebaseAuth.instance.currentUser!.uid)
+                  SpeedDialChild(
+                      child: Icon(
+                        FlutterRemix.logout_circle_line,
+                        color: Colors.red,
+                        size: 24,
+                      ),
+                      onTap: () {
+                        AuthService().logout(context);
+                        navigationController.currentIndex.value = 0;
+                      }),
+              ],
             ),
+          ),
         ],
         title: const Text(
           'P R O F I L E',
@@ -82,6 +137,7 @@ class _ProfilePageState extends State<ProfilePage> with RouteAware {
         centerTitle: true,
         backgroundColor: Colors.transparent,
         foregroundColor: Theme.of(context).colorScheme.primary,
+        elevation: 0, // Remove the shadow for a clean look
       ),
       body: Column(
         children: [
@@ -104,25 +160,49 @@ class _ProfilePageState extends State<ProfilePage> with RouteAware {
                   //   style: TextStyle(fontSize:10,color: Theme.of(context).colorScheme.inversePrimary),
                   // ),
                   const SizedBox(height: 25),
+
                   Row(
                     children: [
                       // Profile Image
                       ProfileImageWithPreview(
                           profilePicUrl: userDetails['profilePic'] ?? ''),
 
-                      // old code is pressent in the profile_image.dart file as a comment
+                      // old code is present in the profile_image.dart file as a comment
                       Obx(
                         () => UserProfileStats(
                             name: userDetails['name'],
                             followers: userDetails['followers'],
-                            following: userDetails['following']),
+                            following: userDetails['following'],
+                            postsCount: profileController.posts.length),
                       ),
                     ],
                   ),
                   const SizedBox(height: 25),
+                  userDetails['bio'].toString().isNotEmpty
+                      ? Padding(
+                          padding: const EdgeInsets.only(left: 8.0),
+                          child: Row(
+                            children: [
+                              Text(
+                                'Bio',
+                                style: TextStyle(
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : SizedBox.shrink(),
+                  const SizedBox(height: 10),
+                  userDetails['bio'].toString().isNotEmpty
+                      ? BioBox(
+                          bioText: userDetails['bio'] ?? "No bio available",
+                        )
+                      : SizedBox.shrink(),
+                  const SizedBox(height: 25),
+
                   Row(
                     children: [
-                      // FollowButton(onPress: (){},text: "Follow",),
                       Expanded(
                         child: FirebaseAuth.instance.currentUser!.uid !=
                                 widget.userId
@@ -202,22 +282,8 @@ class _ProfilePageState extends State<ProfilePage> with RouteAware {
                       ),
                     ],
                   ),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 8.0),
-                    child: Row(
-                      children: [
-                        Text(
-                          'Bio',
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.primary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  BioBox(
-                    bioText: userDetails['bio'] ?? "No bio available",
+                  SizedBox(
+                    height: 15,
                   ),
                 ],
               ),
@@ -226,7 +292,7 @@ class _ProfilePageState extends State<ProfilePage> with RouteAware {
           const SizedBox(height: 10),
           // Posts
           Padding(
-            padding: const EdgeInsets.only(left: 12.0, top: 25),
+            padding: const EdgeInsets.only(left: 14.0, top: 25),
             child: Row(
               children: [
                 Text(
@@ -246,18 +312,31 @@ class _ProfilePageState extends State<ProfilePage> with RouteAware {
             child: Obx(() {
               final posts = profileController.posts;
               if (posts.isEmpty) {
-                return Center(
-                  child: Text(
-                    "No posts available",
-                    style:
-                        TextStyle(color: Theme.of(context).colorScheme.primary),
-                  ),
+                return Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    SizedBox(
+                      height: 50,
+                    ),
+                    Lottie.asset('lib/assets/no-post.json', height: 180),
+                    SizedBox(
+                      height: 10,
+                    ),
+                    Text(
+                      "No posts available",
+                      style: TextStyle(
+                          color: Theme.of(context).colorScheme.primary),
+                    ),
+                  ],
                 );
               }
-              // old code is pressent in the profile_post.dart file as a comment
-              return PostsGridView(
-                posts: posts,
-                userId: profileController.userDetails['uid'],
+              // old code is present in the profile_post.dart file as a comment
+              return Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: PostsGridView(
+                  posts: posts,
+                  userId: profileController.userDetails['uid'],
+                ),
               );
             }),
           ),
