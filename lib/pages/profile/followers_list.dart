@@ -125,7 +125,10 @@ class FollowersList extends StatelessWidget {
                                 //     backgroundColor: Colors.redAccent,
                                 //   ),
                                 // );
-                                Get.snackbar("Chat", "You are not following ${userData['name']}",colorText: Colors.red,snackPosition: SnackPosition.BOTTOM);
+                                Get.snackbar("Chat",
+                                    "You are not following ${userData['name']}",
+                                    colorText: Colors.red,
+                                    snackPosition: SnackPosition.BOTTOM);
                               }
                             },
                             label: "Chat",

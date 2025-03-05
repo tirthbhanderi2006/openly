@@ -57,6 +57,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
         //       content: Text('Profile picture updated successfully!')),
         // );
         Get.snackbar("Profile", "Profile picture updated successfully!",
+          colorText: Colors.white,
+          backgroundColor: Colors.green,
             snackPosition: SnackPosition.BOTTOM);
       }
     } catch (e) {
@@ -93,6 +95,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
           //   const SnackBar(content: Text('Profile updated successfully!')),
           // );
           Get.snackbar("Profile", "Profile updated successfully!",
+          colorText: Colors.white,
+          backgroundColor: Colors.green,
               snackPosition: SnackPosition.BOTTOM);
 
           Navigator.pop(context);

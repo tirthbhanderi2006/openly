@@ -1,3 +1,4 @@
+import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -6,8 +7,8 @@ import 'package:flutter_remix/flutter_remix.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
-
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:lottie/lottie.dart';
 import 'package:mithc_koko_chat_app/components/chat_components/full_image_preview.dart';
 import 'package:mithc_koko_chat_app/controllers/chat_background_controller.dart';
 import 'package:mithc_koko_chat_app/controllers/group_chat_controller.dart';
@@ -18,6 +19,7 @@ import 'package:mithc_koko_chat_app/pages/settings/setting_page.dart';
 import 'package:mithc_koko_chat_app/services/chat_services/call_services.dart';
 import 'package:mithc_koko_chat_app/services/chat_services/chat_services.dart';
 import 'package:mithc_koko_chat_app/services/chat_services/group_chat_services.dart';
+import 'package:mithc_koko_chat_app/utils/chat_utils/chat_utils.dart';
 import 'package:mithc_koko_chat_app/utils/page_transition/slide_up_page_transition.dart';
 import 'package:mithc_koko_chat_app/utils/themes/theme_provider.dart';
 
@@ -151,6 +153,10 @@ class _GroupChatScreenState extends State<GroupChatScreen> with RouteAware {
       imageUrl: imageUrl,
     );
 
+    if (imageUrl != null) {
+      Navigator.pop(context);
+    }
+
     // Clear message field
     _messageController.clear();
   }
@@ -165,7 +171,11 @@ class _GroupChatScreenState extends State<GroupChatScreen> with RouteAware {
       File file = File(image.path);
       String fileName =
           "${widget.groupId}_${DateTime.now().millisecondsSinceEpoch}.jpg";
-
+      _showUploadingDialog();
+      Get.snackbar("Chat", "sending image!!",
+        colorText: Colors.white,
+        backgroundColor: Colors.green,
+          snackPosition: SnackPosition.BOTTOM);
       // Upload to Firebase Storage
       UploadTask uploadTask = FirebaseStorage.instance
           .ref("group_chats/${widget.groupId}/$fileName")
@@ -173,7 +183,6 @@ class _GroupChatScreenState extends State<GroupChatScreen> with RouteAware {
 
       TaskSnapshot snapshot = await uploadTask;
       String imageUrl = await snapshot.ref.getDownloadURL();
-
       // Send message with image URL
       _sendMessage(imageUrl: imageUrl);
     }
@@ -185,6 +194,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> with RouteAware {
     //     ? 'lib/assets/dark-theme-chat.jpg'
     //     : 'lib/assets/light-theme-chat.jpg';
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: _buildAppBar(context, Theme.of(context)),
       body: Obx(
         () => DecoratedBox(
@@ -213,7 +223,9 @@ class _GroupChatScreenState extends State<GroupChatScreen> with RouteAware {
                     if (!snapshot.hasData) {
                       return const Center(child: CircularProgressIndicator());
                     }
-
+                    if(snapshot.data!.docs.isEmpty || snapshot.data==null){
+                      return Center(child: ChatUtils.emptyChatWidget(context),);
+                    }
                     var messages = snapshot.data!.docs;
 
                     return ListView.builder(
@@ -281,6 +293,27 @@ class _GroupChatScreenState extends State<GroupChatScreen> with RouteAware {
                                           width: 200,
                                           height: 200,
                                           fit: BoxFit.cover,
+                                          placeholder: (context, url) {
+                                            return Container(
+                                                width: double.infinity,
+                                                height: double.infinity,
+                                                color: Colors.grey.shade300,
+                                                child: const Center(
+                                                    child:
+                                                        CircularProgressIndicator()));
+                                          },
+                                          errorWidget: (context, url, error) {
+                                            return Container(
+                                              width: double.infinity,
+                                              height: double.infinity,
+                                              color: Colors.grey.shade300,
+                                              child: Icon(
+                                                Icons.broken_image,
+                                                color: Colors.red,
+                                                size: 40,
+                                              ),
+                                            );
+                                          },
                                         ),
                                       ),
                                     ),
@@ -664,6 +697,60 @@ class _GroupChatScreenState extends State<GroupChatScreen> with RouteAware {
           ),
         ],
       ),
+    );
+  }
+
+// uploading dialog
+  Future<void> _showUploadingDialog() async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return WillPopScope(
+          onWillPop: () async => false,
+          child: Dialog(
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20.0),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Lottie Animation
+                  Lottie.asset(
+                    'lib/assets/uploading_animation.json',
+                    width: 150,
+                    height: 150,
+                    fit: BoxFit.contain,
+                  ),
+                  const SizedBox(height: 20),
+                  // Upload Status Text
+                  AnimatedTextKit(totalRepeatCount: 3, animatedTexts: [
+                    TyperAnimatedText(
+                      speed: Duration(milliseconds: 150),
+                      "Sending Image...",
+                      textStyle: TextStyle(
+                        color: Theme.of(context).colorScheme.inversePrimary,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ]),
+                  // const Text(
+                  //   'Uploading Post...',
+                  //   style: TextStyle(
+                  //     fontSize: 18,
+                  //     fontWeight: FontWeight.bold,
+                  //   ),
+                  // ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

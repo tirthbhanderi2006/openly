@@ -1,6 +1,9 @@
+import 'dart:ui';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:lottie/lottie.dart';
 import 'package:mithc_koko_chat_app/components/widgets_components/user_tile.dart';
 import 'package:mithc_koko_chat_app/services/chat_services/chat_services.dart';
 import 'package:skeletonizer/skeletonizer.dart';
@@ -17,7 +20,10 @@ class BlockedUsersPage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         foregroundColor: Theme.of(context).colorScheme.primary,
-        title: const Text('BLOCKED USERS'),
+        title: const Text(
+          "B L O C K E D  U S E R S",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         centerTitle: true,
       ),
       body: _buildBlockedUsersList(context),
@@ -39,7 +45,8 @@ class BlockedUsersPage extends StatelessWidget {
 
         final blockedUsers = snapshot.data ?? [];
         if (blockedUsers.isEmpty) {
-          return const Center(child: Text('No Blocked users found'));
+          // return const Center(child: Text('No Blocked users found'));
+          return emptyChatWidget(context);
         }
 
         return FutureBuilder<List<Map<String, dynamic>>>(
@@ -89,7 +96,8 @@ class BlockedUsersPage extends StatelessWidget {
               //   const SnackBar(content: Text('User Unblocked!')),
               // );
               Get.snackbar("Unblock", "User Unblocked!",
-                  colorText: Colors.green, snackPosition: SnackPosition.BOTTOM);
+                  backgroundColor: Colors.green,
+                  colorText: Colors.white, snackPosition: SnackPosition.BOTTOM);
             },
             child: const Text(
               'Unblock user',
@@ -118,6 +126,38 @@ class BlockedUsersPage extends StatelessWidget {
                   onTap: () {})),
         );
       },
+    );
+  }
+
+  // no user found widget
+  Widget emptyChatWidget(BuildContext context) {
+    return BackdropFilter(
+      filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(0.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Lottie.asset(
+                'lib/assets/no-block-user.json',
+                height: 180,
+              ),
+              Text(
+                'No Blocked users found',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context)
+                      .textTheme
+                      .bodyLarge
+                      ?.color, // Adapts text color
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

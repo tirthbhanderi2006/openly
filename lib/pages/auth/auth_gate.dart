@@ -1,8 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:mithc_koko_chat_app/pages/auth/login_or_register.dart';
-
-import '../home_page.dart';
 import '../main_home.dart';
 
 class AuthGate extends StatelessWidget {
@@ -14,12 +12,16 @@ class AuthGate extends StatelessWidget {
       body: StreamBuilder(stream:
       FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {
+        // show loader if waiting to prevent any lag
+        if(snapshot.connectionState==ConnectionState.waiting){
+          return Center(child: CircularProgressIndicator(),);
+        }
         // user loin or not?
         if(snapshot.hasData){
-          return MainHome();
+          return MainHome();//if user login then return HomePage
             // return HomePage();
         }else{
-          return LoginOrRegister();
+          return LoginOrRegister(); //if user not login then return LoginPage
         }
       },),
     );

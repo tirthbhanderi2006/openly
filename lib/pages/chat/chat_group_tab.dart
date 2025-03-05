@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:mithc_koko_chat_app/pages/chat/show_group.dart';
 import 'package:mithc_koko_chat_app/pages/chat/user_page.dart';
 
 class ChatGroupTabLayout extends StatelessWidget {
-  const ChatGroupTabLayout({super.key});
+  ChatGroupTabLayout({super.key});
+
+  final RxBool isGroupTab = false.obs;
 
   @override
   Widget build(BuildContext context) {
@@ -12,7 +15,7 @@ class ChatGroupTabLayout extends StatelessWidget {
       child: Scaffold(
         appBar: AppBar(
           title: const Text(
-            "Chats",
+            "C H A T S",
             style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.bold,
@@ -40,6 +43,9 @@ class ChatGroupTabLayout extends StatelessWidget {
                 borderSide: BorderSide(width: 3, color: Colors.black),
                 insets: EdgeInsets.symmetric(horizontal: 30),
               ),
+              onTap: (index) {
+                isGroupTab.value = index == 1; // 0 for "Chat", 1 for "Groups"
+              },
               tabs: [
                 Tab(text: "C H A T"),
                 Tab(text: "G R O U P S"),

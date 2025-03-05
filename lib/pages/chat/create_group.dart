@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -62,6 +63,9 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                   if (!snapshot.hasData) {
                     return const Center(child: CircularProgressIndicator());
                   }
+                  if(snapshot.data!.isEmpty){
+                    return const Center(child: Text("No users found!"),);
+                  }
 
                   var users = snapshot.data!;
                   return ListView.builder(
@@ -77,7 +81,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                       return Obx(
                         () => ListTile(
                           leading: CircleAvatar(
-                            backgroundImage: NetworkImage(profilePic),
+                            backgroundImage: CachedNetworkImageProvider(profilePic),
                             radius: 25,
                           ),
                           title: Text(username,

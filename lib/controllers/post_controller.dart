@@ -2,14 +2,12 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mithc_koko_chat_app/components/widgets_components/my_textfield.dart';
 import 'package:mithc_koko_chat_app/model/comments_model.dart';
 import 'package:mithc_koko_chat_app/model/post_model.dart';
 import 'package:mithc_koko_chat_app/services/features_services/post_services.dart';
-import 'package:path/path.dart';
 
 class PostController extends GetxController {
   final PostServices _postServices = PostServices();
@@ -73,6 +71,8 @@ class PostController extends GetxController {
         "Bookmarks",
         "Post added to bookmarks!",
         snackPosition: SnackPosition.BOTTOM,
+        colorText: Colors.white,
+        backgroundColor: Colors.green,
       );
     } catch (e) {
       print('Error : $e');
@@ -95,7 +95,9 @@ class PostController extends GetxController {
       // ScaffoldMessenger.of(context).showSnackBar(
       //     SnackBar(content: Text('Post removed from bookmarks!')));
       Get.snackbar("Bookmarks", "Post removed from bookmarks!",
-          snackPosition: SnackPosition.BOTTOM);
+          snackPosition: SnackPosition.BOTTOM,
+          colorText: Colors.white,
+          backgroundColor: Colors.green);
     } catch (e) {
       print('Error : $e');
       // ScaffoldMessenger.of(context).showSnackBar(
@@ -232,7 +234,7 @@ class PostController extends GetxController {
         ),
         title: Text(
           comment.userId == FirebaseAuth.instance.currentUser!.uid
-              ? '${comment.userName} (you)'
+              ? '${comment.userName}(you)'
               : comment.userName,
           style: TextStyle(
             fontSize: 10,
@@ -279,6 +281,8 @@ class PostController extends GetxController {
                     commentId: comment.id,
                   );
                   Navigator.pop(context);
+                  FocusScope.of(context)
+                      .unfocus(); // remove the focus from the textfield
                 },
                 child:
                     const Text("Delete", style: TextStyle(color: Colors.red)),
@@ -354,8 +358,12 @@ class PostController extends GetxController {
         // ScaffoldMessenger.of(context)
         //     .showSnackBar(const SnackBar(content: Text("Comment added")));
         Get.snackbar("Comment", "Comment added",
-            snackPosition: SnackPosition.BOTTOM);
+            snackPosition: SnackPosition.BOTTOM,
+            colorText: Colors.white,
+            backgroundColor: Colors.green);
         _commentController.clear();
+
+        FocusScope.of(context).unfocus(); // Close the keyboard
       } else {
         // ScaffoldMessenger.of(context).showSnackBar(
         //     const SnackBar(content: Text("You cannot add an empty comment")));
@@ -376,7 +384,9 @@ class PostController extends GetxController {
       // ScaffoldMessenger.of(context)
       //     .showSnackBar(const SnackBar(content: Text('Image saved')));
       Get.snackbar("Save", "Image saved to downloads",
-          snackPosition: SnackPosition.BOTTOM);
+          snackPosition: SnackPosition.BOTTOM,
+          colorText: Colors.white,
+          backgroundColor: Colors.green);
     } catch (error) {
       // ScaffoldMessenger.of(context)
       //     .showSnackBar(const SnackBar(content: Text('Failed to save image')));

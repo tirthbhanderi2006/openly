@@ -103,6 +103,11 @@ class PostCard extends StatelessWidget {
                             ),
                           );
                         },
+                        errorWidget: (context, url, error) {
+                          return Center(
+                            child: Icon(Icons.error,color: Colors.red,)
+                          );
+                        },
                       ),
                     ),
                   ),
@@ -232,8 +237,11 @@ class PostCard extends StatelessWidget {
                             color: colorScheme.primary, // Highlight username
                           ),
                         ),
-                        const TextSpan(text: ' '),
+                        const TextSpan(text: '  '),
                         TextSpan(
+                          style: TextStyle(
+                            fontFamily: GoogleFonts.poppins().fontFamily
+                          ),
                           text: post.caption,
                         ),
                       ],

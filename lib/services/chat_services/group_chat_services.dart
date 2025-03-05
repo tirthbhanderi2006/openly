@@ -104,7 +104,8 @@ class GroupChatServises {
         .collection("messages")
         .doc(messageID)
         .delete();
-    Get.snackbar("Message", "Messages deleted !!");
+    Get.snackbar("Message", "Messages deleted !!",
+        colorText: Colors.white, backgroundColor: Colors.green);
   }
 
   // save image to local gallery
@@ -117,6 +118,8 @@ class GroupChatServises {
       (value) {
         Navigator.pop(context);
         Get.snackbar("Save", "Image saved to downloads",
+          colorText: Colors.white,
+          backgroundColor: Colors.green,
             snackPosition: SnackPosition.BOTTOM);
       },
     ).onError(

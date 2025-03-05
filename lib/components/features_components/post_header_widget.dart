@@ -6,7 +6,6 @@ import 'package:flutter_remix/flutter_remix.dart';
 import 'package:mithc_koko_chat_app/pages/profile/profile_page.dart';
 
 import '../../utils/page_transition/slide_up_page_transition.dart';
-import '../../services/chat_services/chat_services.dart';
 import '../../services/features_services/post_services.dart';
 
 class ProfileWidget extends StatefulWidget {
@@ -147,31 +146,33 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                     },
                   );
                 },
-              )
-            : PopupMenuButton<String>(
-                icon: Icon(
-                  Icons.more_vert,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-                onSelected: (value) {
-                  if (value == 'block') {
-                    ChatServices().blockUser(widget.userId);
-                  }
-                },
-                itemBuilder: (context) => [
-                  PopupMenuItem<String>(
-                    value: 'block',
-                    child: Row(
-                      children: [
-                        Icon(Icons.block,
-                            color: Theme.of(context).colorScheme.error),
-                        const SizedBox(width: 10),
-                        const Text('Block User'),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+              ):
+              SizedBox.shrink(), 
+              // block option
+            // : PopupMenuButton<String>(
+            //     icon: Icon(
+            //       Icons.more_vert,
+            //       color: Theme.of(context).colorScheme.primary,
+            //     ),
+            //     onSelected: (value) {
+            //       if (value == 'block') {
+            //         ChatServices().blockUser(widget.userId);
+            //       }
+            //     },
+            //     itemBuilder: (context) => [
+            //       PopupMenuItem<String>(
+            //         value: 'block',
+            //         child: Row(
+            //           children: [
+            //             Icon(Icons.block,
+            //                 color: Theme.of(context).colorScheme.error),
+            //             const SizedBox(width: 10),
+            //             const Text('Block User'),
+            //           ],
+            //         ),
+            //       ),
+            //     ],
+            //   ),
       ],
     );
   }

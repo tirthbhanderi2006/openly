@@ -170,9 +170,10 @@ class _ProfilePageState extends State<ProfilePage> with RouteAware {
                       // old code is present in the profile_image.dart file as a comment
                       Obx(
                         () => UserProfileStats(
+                            userId: userDetails['uid'],
                             name: userDetails['name'],
-                            followers: userDetails['followers'],
-                            following: userDetails['following'],
+                            followers: profileController.followers,
+                            following: profileController.following,
                             postsCount: profileController.posts.length),
                       ),
                     ],
@@ -316,14 +317,14 @@ class _ProfilePageState extends State<ProfilePage> with RouteAware {
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     SizedBox(
-                      height: 50,
+                      height: 30,
                     ),
                     Lottie.asset('lib/assets/no-post.json', height: 180),
                     SizedBox(
-                      height: 10,
+                      height: 8,
                     ),
                     Text(
-                      "No posts available",
+                      "No posts yet!!",
                       style: TextStyle(
                           color: Theme.of(context).colorScheme.primary),
                     ),

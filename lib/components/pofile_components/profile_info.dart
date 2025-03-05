@@ -6,17 +6,18 @@ import 'package:mithc_koko_chat_app/utils/page_transition/slide_up_page_transiti
 
 class UserProfileStats extends StatelessWidget {
   final String name;
+  final String userId;
   final List<dynamic> followers;
   final List<dynamic> following;
   final int postsCount;
 
-  const UserProfileStats({
-    super.key,
-    required this.name,
-    required this.followers,
-    required this.following,
-    required this.postsCount
-  });
+  const UserProfileStats(
+      {super.key,
+      required this.userId,
+      required this.name,
+      required this.followers,
+      required this.following,
+      required this.postsCount});
 
   @override
   Widget build(BuildContext context) {
@@ -82,7 +83,7 @@ class UserProfileStats extends StatelessWidget {
                 context: context,
                 label: "Posts",
                 count: postsCount,
-                onTap: () {}, // Add functionality if needed
+                onTap: () {/*navigate to all post page */},
               ),
             ],
           ),
@@ -122,6 +123,7 @@ class UserProfileStats extends StatelessWidget {
     );
   }
 }
+
 //                  this is code is previously used in the profile_info.dart file if needed you can use it
                       // Container(
                       //   height: 120,

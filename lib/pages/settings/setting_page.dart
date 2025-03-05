@@ -1,16 +1,13 @@
-import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_remix/flutter_remix.dart';
 import 'package:get/get.dart';
-import 'package:get_storage/get_storage.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:lottie/lottie.dart';
 import 'package:mithc_koko_chat_app/controllers/chat_background_controller.dart';
+import 'package:mithc_koko_chat_app/utils/page_transition/slide_up_page_transition.dart';
 import 'package:mithc_koko_chat_app/utils/themes/theme_provider.dart';
 import 'package:provider/provider.dart';
 import 'blocked_users_page.dart';
-import 'package:path_provider/path_provider.dart';
 
 class SettingPage extends StatelessWidget {
   const SettingPage({super.key});
@@ -91,8 +88,7 @@ class SettingPage extends StatelessWidget {
                     icon: Icons.block,
                     onTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(
-                          builder: (context) => BlockedUsersPage()),
+                      SlideUpNavigationAnimation(child: BlockedUsersPage()),
                     ),
                   ),
 

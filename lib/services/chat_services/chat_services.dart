@@ -1,6 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:get/get.dart';
+import 'package:get/utils.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:mithc_koko_chat_app/controllers/profile_controller.dart';
 import 'package:mithc_koko_chat_app/model/message_model.dart';
 import 'package:mithc_koko_chat_app/utils/themes/theme_provider.dart';
 
@@ -129,12 +132,34 @@ class ChatServices {
 // block user
   Future<void> blockUser(String userId) async {
     String currentuserId = FirebaseAuth.instance.currentUser!.uid;
+
+    // remove user from following list
+    await _firestore.collection("users").doc(currentuserId).update({
+      "following": FieldValue.arrayRemove([userId]),
+      "followers": FieldValue.arrayRemove([userId])
+    });
+
+    final profileController = Get.find<ProfileController>();
+    if(profileController.followers.contains(userId)) {
+      profileController.followers.remove(userId);
+    }
+    if(profileController.following.contains(userId)) {
+      profileController.following.remove(userId);
+    }
+
+    // remove the current user from the blocked user's following list and followers list
+    await _firestore.collection("users").doc(userId).update({
+      "following": FieldValue.arrayRemove([currentuserId]),
+      "followers": FieldValue.arrayRemove([currentuserId])
+    });
+
     await _firestore
         .collection("users")
         .doc(currentuserId)
         .collection("BlockedUsers")
         .doc(userId)
         .set({});
+
 // notifyListeners();
   }
 

@@ -10,9 +10,8 @@ class CallServices {
 
 // credentials for video audio calls and group calls using Zego
   final _APP_ID = 482616865;
-  final _APP_SIGN =
-      '69c2940bbaac4ae2e8d94ffc1343fde1fed742133c9cfb9eedef243e6912e5c1';
-
+  final _APP_SIGN ='69c2940bbaac4ae2e8d94ffc1343fde1fed742133c9cfb9eedef243e6912e5c1';
+  
   //FOR VIDEO CALLS
 
   void startVideoCall(
@@ -210,8 +209,8 @@ void startAudioCall(
                   context,
                   MaterialPageRoute(
                     builder: (context) => ZegoUIKitPrebuiltCall(
-                      appID: _APP_ID, // Replace with your actual App ID
-                      appSign: _APP_SIGN, // Replace with your actual App Sign
+                      appID: _APP_ID,
+                      appSign: _APP_SIGN,
                       userID: callData['receiverID'],
                       userName:
                           FirebaseAuth.instance.currentUser!.email.toString(),
@@ -264,8 +263,8 @@ void startAudioCall(
         context,
         MaterialPageRoute(
           builder: (context) => ZegoUIKitPrebuiltCall(
-            appID: _APP_ID, // Your ZegoCloud app ID
-            appSign: _APP_SIGN, // Your ZegoCloud app sign
+            appID: _APP_ID, 
+            appSign: _APP_SIGN,
             userID: currentUserId,
             userName: FirebaseAuth.instance.currentUser!.email.toString(),
             callID: callID,

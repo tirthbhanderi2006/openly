@@ -14,9 +14,12 @@ import 'package:mithc_koko_chat_app/pages/chat/image_grid.dart';
 import 'package:mithc_koko_chat_app/pages/profile/profile_page.dart';
 import 'package:mithc_koko_chat_app/pages/settings/setting_page.dart';
 import 'package:mithc_koko_chat_app/services/chat_services/call_services.dart';
+import 'package:mithc_koko_chat_app/utils/chat_utils/chat_utils.dart';
 import 'package:mithc_koko_chat_app/utils/page_transition/slide_up_page_transition.dart';
 import 'package:mithc_koko_chat_app/utils/themes/theme_provider.dart';
 import '../../services/chat_services/chat_services.dart';
+import 'package:lottie/lottie.dart';
+import 'package:animated_text_kit/animated_text_kit.dart';
 
 class ChatPage extends StatefulWidget {
   final String receiverEmail;
@@ -129,7 +132,10 @@ class _ChatPageState extends State<ChatPage> {
       //   const SnackBar(content: Text('Image sent successfully')),
       // );
       Get.snackbar("Message", "Image sent successfully!",
+        colorText: Colors.white,
+        backgroundColor: Colors.green,
           snackPosition: SnackPosition.BOTTOM);
+      Navigator.pop(context);
     }
   }
 
@@ -145,6 +151,7 @@ class _ChatPageState extends State<ChatPage> {
         // );
         Get.snackbar("Message", "Uploading image",
             snackPosition: SnackPosition.BOTTOM);
+        await _showUploadingDialog();
 
         String fileName = DateTime.now().millisecondsSinceEpoch.toString();
         Reference storageRef =
@@ -158,7 +165,7 @@ class _ChatPageState extends State<ChatPage> {
         //   SnackBar(content: Text('Failed to send image: ${e.toString()}')),
         // );
         Get.snackbar("Message", "Failed to send image: ${e.toString()}",
-            snackPosition: SnackPosition.BOTTOM);
+            snackPosition: SnackPosition.BOTTOM,colorText: Colors.red);
       }
     } else {
       // ScaffoldMessenger.of(context).showSnackBar(
@@ -169,122 +176,9 @@ class _ChatPageState extends State<ChatPage> {
     }
   }
 
-  void showProfileDialog(BuildContext context, String? profilePicUrl) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text(
-            'Profile Options',
-            style: TextStyle(),
-          ),
-          actionsAlignment: MainAxisAlignment.center,
-          actions: [
-            Column(
-              children: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      SlideUpNavigationAnimation(
-                        child: ProfilePage(userId: widget.receiverId),
-                      ),
-                    );
-                  },
-                  child: Text(
-                    'Visit Profile',
-                    style: TextStyle(
-                      color: isDarkMode ? Colors.white : Colors.black,
-                    ),
-                  ),
-                ),
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    showProfilePicture(profilePicUrl: profilePicUrl!);
-                  },
-                  child: Text(
-                    'View Profile Picture',
-                    style: TextStyle(
-                      color: isDarkMode ? Colors.white : Colors.black,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void showProfilePicture({required String profilePicUrl}) {
-    showDialog(
-      context: context,
-      barrierDismissible: true, // Allow dismissal by tapping outside the dialog
-      builder: (BuildContext context) {
-        return Center(
-          // Center the dialog explicitly
-          child: Material(
-            color: Colors.transparent, // Transparent material for the dialog
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                // Blurred Background
-                BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-                  child: Container(
-                    color: Colors.black.withOpacity(0.5),
-                  ),
-                ),
-                // Circular Profile Image
-                Container(
-                  height: 220, // Profile image size
-                  width: 220,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.5),
-                        blurRadius: 15,
-                      ),
-                    ],
-                    image: DecorationImage(
-                      image: CachedNetworkImageProvider(
-                        profilePicUrl.isNotEmpty
-                            ? profilePicUrl
-                            : 'https://www.gravatar.com/avatar/?d=identicon',
-                      ),
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
-                // Close Button
-                Positioned(
-                  top: 10,
-                  right: 10,
-                  child: IconButton(
-                    icon: const Icon(Icons.close, color: Colors.white),
-                    onPressed: () => Navigator.of(context).pop(),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    // String imageAsset = ThemeProvider().isDarkMode
-    //     ? 'lib/assets/dark-theme-chat.jpg'
-    //     : 'lib/assets/light-theme-chat.jpg';
     return FutureBuilder<Map<String, dynamic>>(
       future: _userDetailsFuture,
       builder: (context, snapshot) {
@@ -294,6 +188,7 @@ class _ChatPageState extends State<ChatPage> {
             body: const Center(child: CircularProgressIndicator()),
           );
         }
+
         if (snapshot.hasError || !snapshot.hasData || snapshot.data!.isEmpty) {
           return Scaffold(
             backgroundColor: theme.colorScheme.background,
@@ -312,6 +207,7 @@ class _ChatPageState extends State<ChatPage> {
 
         return Scaffold(
           appBar: _buildAppBar(context, userMap, theme),
+          extendBodyBehindAppBar: true,
           body: Obx(() => DecoratedBox(
                 decoration: BoxDecoration(
                   image: DecorationImage(
@@ -333,10 +229,6 @@ class _ChatPageState extends State<ChatPage> {
                   ],
                 ),
               )),
-          // floatingActionButton: FloatingActionButton(
-          //   onPressed: () => backgroundController.removeBackground(),
-          //   child: Icon(Icons.image),
-          // ),
         );
       },
     );
@@ -497,10 +389,12 @@ class _ChatPageState extends State<ChatPage> {
             color: ThemeProvider().isDarkMode ? Colors.white : Colors.black),
         onPressed: () => Navigator.pop(context),
       ),
+      
       title: Row(
         children: [
           GestureDetector(
-            onTap: () => showProfileDialog(context, userMap['profilePic']),
+            onTap: () => ChatUtils.showProfileDialog(
+                context, userMap['profilePic'], widget.receiverId),
             child: CircleAvatar(
               backgroundImage: userMap['profilePic'] != null
                   ? CachedNetworkImageProvider(userMap['profilePic'])
@@ -534,8 +428,9 @@ class _ChatPageState extends State<ChatPage> {
       ),
       backgroundColor: Theme.of(context).colorScheme.background,
       elevation: 4,
+
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(16)),
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(15)),
       ),
     );
   }
@@ -550,6 +445,9 @@ class _ChatPageState extends State<ChatPage> {
         }
         if (snapshot.hasError) {
           return Center(child: Text('Error: ${snapshot.error}'));
+        }
+        if(snapshot.data == null || snapshot.data!.docs.isEmpty){
+          return Center(child: ChatUtils.emptyChatWidget(context));
         }
         return ListView.builder(
           controller: _scrollController,
@@ -699,8 +597,8 @@ class _ChatPageState extends State<ChatPage> {
     );
   }
 
-// chat clear function via popup menu
-  _clearChat(
+  // chat clear function via popup menu
+  void _clearChat(
       {required BuildContext context,
       required String currentUserId,
       required String receiverId}) {
@@ -722,7 +620,9 @@ class _ChatPageState extends State<ChatPage> {
               // ScaffoldMessenger.of(context).showSnackBar(
               //   const SnackBar(content: Text('Chat cleared')),
               // );
-              Get.snackbar("chat", "Chat cleared",
+              Get.snackbar("chat", "Chat cleared!",
+                  colorText: Colors.white,
+                  backgroundColor: Colors.green,
                   snackPosition: SnackPosition.BOTTOM);
             },
             child: const Text(
@@ -732,6 +632,61 @@ class _ChatPageState extends State<ChatPage> {
           ),
         ],
       ),
+    );
+  }
+
+  // build uploading dialog
+
+  Future<void> _showUploadingDialog() async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return WillPopScope(
+          onWillPop: () async => false,
+          child: Dialog(
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20.0),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Lottie Animation
+                  Lottie.asset(
+                    'lib/assets/uploading_animation.json',
+                    width: 150,
+                    height: 150,
+                    fit: BoxFit.contain,
+                  ),
+                  const SizedBox(height: 20),
+                  // Upload Status Text
+                  AnimatedTextKit(totalRepeatCount: 3, animatedTexts: [
+                    TyperAnimatedText(
+                      speed: Duration(milliseconds: 150),
+                      "Sending Image...",
+                      textStyle: TextStyle(
+                        color: Theme.of(context).colorScheme.inversePrimary,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ]),
+                  // const Text(
+                  //   'Uploading Post...',
+                  //   style: TextStyle(
+                  //     fontSize: 18,
+                  //     fontWeight: FontWeight.bold,
+                  //   ),
+                  // ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

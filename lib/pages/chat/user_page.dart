@@ -1,5 +1,8 @@
+import 'dart:ui';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 import 'package:mithc_koko_chat_app/utils/page_transition/slide_left_page_transition.dart';
 
 import '../../components/widgets_components/user_tile.dart';
@@ -55,9 +58,7 @@ class _UsersPageState extends State<UsersPage> {
 
         // Check if snapshot has data
         if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return const Center(
-            child: Text("No users found."),
-          );
+          return emptyUserAnimation(context);
         }
 
         // Apply delay before showing actual data
@@ -117,6 +118,43 @@ class _UsersPageState extends State<UsersPage> {
                   imgUrl: "https://www.gravatar.com/avatar/?d=identicon")),
         );
       },
+    );
+  }
+
+  // no user found widget
+  Widget emptyUserAnimation(BuildContext context) {
+    return BackdropFilter(
+      filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(0.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                height: 250,
+                width: 250,
+                child: Lottie.asset(
+                  'lib/assets/no-user-found.json',
+                  fit: BoxFit
+                      .contain, // Makes sure the animation scales to fill the space
+                ),
+              ),
+              Text(
+                'No users found',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context)
+                      .textTheme
+                      .bodyLarge
+                      ?.color, // Adapts text color
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

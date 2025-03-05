@@ -9,6 +9,8 @@ class ProfileController extends GetxController {
   final posts = <PostModel>[].obs;
   final followersCount = 0.obs;
   final followingCount = 0.obs;
+  final followers = <String>[].obs;
+  final following = <String>[].obs;
 
   StreamSubscription? _userDetailsSubscription;
 
@@ -28,6 +30,8 @@ class ProfileController extends GetxController {
           userDetails.value = data;
           followersCount.value = (data['followers'] as List?)?.length ?? 0;
           followingCount.value = (data['following'] as List?)?.length ?? 0;
+          followers.value = List<String>.from(data['followers'] ?? []);
+          following.value = List<String>.from(data['following'] ?? []);
         }
       }
     });

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -9,11 +10,11 @@ class NetworkController extends GetxController {
   final Connectivity _connectivity = Connectivity();
   bool _isConnected = true;
   BuildContext? _dialogContext;
-
+  StreamSubscription? _connectivitySubscription;
   @override
   void onInit() {
     super.onInit();
-    _connectivity.onConnectivityChanged.listen((connectivityResults) {
+      _connectivitySubscription = _connectivity.onConnectivityChanged.listen((connectivityResults) {
       _updateConnectionStatus(connectivityResults);
     });
   }
@@ -77,7 +78,7 @@ class NetworkController extends GetxController {
               title: Column(
                 children: [
                   Lottie.asset(
-                    'lib/assets/no_internet.json', // Make sure to add this image to your assets
+                    'lib/assets/no_internet.json',
                     height: 120,
                     width: 120,
                     fit: BoxFit.contain,
@@ -126,4 +127,10 @@ class NetworkController extends GetxController {
   }
 
   bool get isConnected => _isConnected;
+  
+  @override
+  void onClose() {
+    _connectivitySubscription?.cancel();
+    super.onClose();
+  }
 }

@@ -36,7 +36,7 @@ class ChatBackgroundController extends GetxController {
       if (pickedFile == null) return;
 
       final appDir = await getApplicationDocumentsDirectory();
-      
+
       final fileName =
           'chat_background_${DateTime.now().millisecondsSinceEpoch}.png';
       final File newImage =
@@ -66,9 +66,16 @@ class ChatBackgroundController extends GetxController {
     if (backgroundImagePath.value.isNotEmpty) {
       backgroundImagePath.value = "";
       await box.remove('chatBackgroundPath');
-      Get.snackbar("Chat", "Background removed");
+      Get.snackbar("Chat", "Background removed",
+          // snackPosition: SnackPosition.BOTTOM,
+          colorText: Colors.white,
+          backgroundColor: Colors.green);
     } else {
-      Get.snackbar("Chat", "Background is already removed");
+      Get.snackbar("Chat", "Background is already removed",
+      // snackPosition: SnackPosition.BOTTOM
+      colorText: Colors.white,
+      backgroundColor: Colors.green
+      );
     }
   }
 }

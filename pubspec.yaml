@@ -62,7 +62,7 @@ dependencies:
   firebase_crashlytics: ^4.3.2
   firebase_analytics: ^11.4.2
   path_provider: ^2.1.5
-  flutter_native_splash: ^2.4.4
+  # flutter_native_splash: ^2.4.4
 
 
 # For information on the generic Dart part of this file, see the

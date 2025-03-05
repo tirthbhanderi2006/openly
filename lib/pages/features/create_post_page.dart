@@ -217,6 +217,7 @@ class _CreatePostPageState extends State<CreatePostPage> {
         );
 
         await PostServices().uploadPost(model: model);
+        Navigator.pop(context); //navigate to home page after post uploaded
 
         Get.back(); // Close the uploading dialog
         Get.snackbar("Post", "Post uploaded successfully!",
@@ -236,6 +237,7 @@ class _CreatePostPageState extends State<CreatePostPage> {
             colorText: Colors.red, snackPosition: SnackPosition.BOTTOM);
 
         setState(() => isLoading = false);
+        Navigator.pop(context);
       }
     }
   }
@@ -290,6 +292,7 @@ class _CreatePostPageState extends State<CreatePostPage> {
                       speed: Duration(milliseconds: 150),
                       "Uploading Post...",
                       textStyle: TextStyle(
+                        color: Theme.of(context).colorScheme.inversePrimary,
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),

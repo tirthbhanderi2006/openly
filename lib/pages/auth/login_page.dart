@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mithc_koko_chat_app/pages/main_home.dart';
@@ -167,10 +168,11 @@ class LoginPage extends StatelessWidget {
             snackPosition: SnackPosition.BOTTOM,
             colorText: Colors.white,
             backgroundColor: Colors.green);
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => MainHome()),
-        );
+        // Navigator.pushReplacement(
+        //   context,
+        //   MaterialPageRoute(builder: (context) => MainHome()),
+        // );
+        Navigator.pushReplacement(context, CupertinoPageRoute(builder: (context) => MainHome(),));
       } on Exception catch (e) {
         Get.snackbar("Login", "Login failed, icorrect id or password",
             colorText: Colors.red, snackPosition: SnackPosition.BOTTOM);

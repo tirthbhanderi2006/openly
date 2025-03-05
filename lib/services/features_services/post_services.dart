@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import '../../model/comments_model.dart';
 import '../../model/post_model.dart';
 
@@ -51,7 +50,7 @@ class PostServices {
     try {
       final userId = FirebaseAuth.instance.currentUser!.uid;
 
-      // Add the post to the user's bookmarks subcollection
+      // Add the post to the user's bookmarks sub collection
       await _firestore
           .collection("users")
           .doc(userId)
@@ -87,6 +86,8 @@ class PostServices {
       throw Exception('Failed to remove bookmark: $e');
     }
   }
+  // this function will remove post from feed
+
 
   Stream<List<PostModel>> getBookmarksStream() {
     final userId = FirebaseAuth.instance.currentUser!.uid;

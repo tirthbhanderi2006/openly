@@ -188,7 +188,9 @@ class ChatBubble extends StatelessWidget {
       //   const SnackBar(content: Text('Image saved')),
       // );
       Get.snackbar("Save", "Image saved to downloads",
-          snackPosition: SnackPosition.BOTTOM);
+          snackPosition: SnackPosition.BOTTOM,
+          colorText: Colors.white,
+          backgroundColor: Colors.green);
     }).catchError((error) {
       // ScaffoldMessenger.of(context).showSnackBar(
       //   const SnackBar(content: Text('Failed to save image')),
