@@ -191,7 +191,7 @@ class _CreatePostPageState extends State<CreatePostPage> {
 
     if (_formKey.currentState!.validate()) {
       if (_imageFile == null || _captionController.text.isEmpty) {
-        Get.snackbar("Post", "Please select an image and enter a caption",
+        Get.snackbar("Post", "Please select an image ",
             colorText: Colors.red, snackPosition: SnackPosition.BOTTOM);
         return;
       }

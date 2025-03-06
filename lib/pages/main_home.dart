@@ -37,7 +37,7 @@ class MainHome extends StatelessWidget {
         bottomNavigationBar: Obx(
           () => _navigationController.isKeyboardOpen.value
               ? SizedBox.shrink()
-              : EnhancedBottomBar(),
+              : MyBottomBar(),
         ));
   }
 }

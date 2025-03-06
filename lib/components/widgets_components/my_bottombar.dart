@@ -6,8 +6,8 @@ import 'package:flutter/services.dart';
 import 'package:mithc_koko_chat_app/controllers/navigation_controller.dart';
 import 'package:mithc_koko_chat_app/utils/themes/theme_provider.dart';
 
-class EnhancedBottomBar extends StatelessWidget {
-  const EnhancedBottomBar({super.key});
+class MyBottomBar extends StatelessWidget {
+  const MyBottomBar({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +17,8 @@ class EnhancedBottomBar extends StatelessWidget {
 
     // Dynamic theme-based colors
     final selectedColor = isDarkMode ? Colors.white : Colors.black;
-    final unselectedColor = isDarkMode ? Colors.grey.shade400 : Colors.grey.shade700;
+    final unselectedColor =
+        isDarkMode ? Colors.grey.shade400 : Colors.grey.shade700;
     final backgroundColor = isDarkMode
         ? Colors.black.withOpacity(0.85)
         : Colors.white.withOpacity(0.90);
@@ -55,7 +56,8 @@ class EnhancedBottomBar extends StatelessWidget {
             ),
             child: SafeArea(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12.0,vertical: 5),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12.0, vertical: 5),
                 child: Obx(() {
                   final currentIndex = navigationController.currentIndex.value;
                   return Row(
@@ -207,8 +209,9 @@ class EnhancedBottomBar extends StatelessWidget {
           height: 50,
           width: 50,
           decoration: BoxDecoration(
-            shape: BoxShape.circle,
             color: isSelected ? Colors.grey.shade800 : Colors.grey.shade600,
+            borderRadius:
+                BorderRadius.circular(20), 
             boxShadow: [
               BoxShadow(
                 color: Colors.white.withOpacity(isSelected ? 0.5 : 0.3),
