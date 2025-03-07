@@ -29,6 +29,6 @@ ThemeData darkMode = ThemeData(
     surface: Color(0xFF4B4A48), // Surface color
     onSurface: Colors.white,
   ),
-  fontFamily: GoogleFonts.poppins().fontFamily,
-  // fontFamily: GoogleFonts.dancingScript().fontFamily
+  // fontFamily: GoogleFonts.poppins().fontFamily,
+  // fontFamily: GoogleFonts.recursive().fontFamily,
 );

@@ -1,38 +1,43 @@
 import 'package:flutter/material.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:mithc_koko_chat_app/utils/themes/light_mode.dart';
 import 'package:mithc_koko_chat_app/utils/themes/dark_mode.dart';
 
 class ThemeProvider extends ChangeNotifier {
   final GetStorage _storage = GetStorage();
   static const String _themeKey = 'isDarkMode';
+  static const String _fontKey = 'selectedFont';
 
-  // Load the saved theme mode from storage or default to light mode
-  ThemeData _themeData =
-      GetStorage().read<bool>(_themeKey) ?? false ? darkMode : lightMode;
+  ThemeData _themeData;
+  String _selectedFont;
 
-  // Default theme set to light mode
-  // ThemeData _themeData = lightMode;
+  ThemeProvider()
+      : _themeData = (GetStorage().read<bool>(_themeKey) ?? false)
+            ? darkMode
+            : lightMode,
+        _selectedFont = GetStorage().read<String>(_fontKey) ?? 'Recursive';
 
-  // Getter for the current theme
   ThemeData get themeData => _themeData;
-
-  // Getter to check if dark mode is active
   bool get isDarkMode => _themeData == darkMode;
+  String get selectedFont => _selectedFont;
 
-  // Setter for theme data
-  set themeData(ThemeData themeData) {
-    _themeData = themeData;
-    _storage.write(_themeKey, themeData == darkMode); // Save preference
-    notifyListeners(); // Notify listeners of the theme change
+  void toggleTheme() {
+    _themeData = isDarkMode ? lightMode : darkMode;
+    _storage.write(_themeKey, isDarkMode);
+    notifyListeners();
   }
 
-  // Method to toggle between light and dark mode
-  void toggleTheme() {
-    if (_themeData == lightMode) {
-      themeData = darkMode;
-    } else {
-      themeData = lightMode;
-    }
+  void updateFont(String font) {
+    _selectedFont = font;
+    _storage.write(_fontKey, font);
+    notifyListeners();
+  }
+
+  ThemeData getThemeWithFont() {
+    // notifyListeners();
+    return _themeData.copyWith(
+      textTheme: GoogleFonts.getTextTheme(_selectedFont),
+    );
   }
 }

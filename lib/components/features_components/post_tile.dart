@@ -105,8 +105,10 @@ class PostCard extends StatelessWidget {
                         },
                         errorWidget: (context, url, error) {
                           return Center(
-                            child: Icon(Icons.error,color: Colors.red,)
-                          );
+                              child: Icon(
+                            Icons.error,
+                            color: Colors.red,
+                          ));
                         },
                       ),
                     ),
@@ -204,8 +206,10 @@ class PostCard extends StatelessWidget {
                           color: colorScheme.onSurface,
                         ),
                         onPressed: () => !controller.isBookmarked.value
-                            ? controller.addBookmark(model: post,context:context)
-                            : controller.removeBookmark(postId: post.postId,context:context),
+                            ? controller.addBookmark(
+                                model: post, context: context)
+                            : controller.removeBookmark(
+                                postId: post.postId, context: context),
                       )),
                 ],
               ),
@@ -233,14 +237,14 @@ class PostCard extends StatelessWidget {
                           text: post.userName,
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            fontFamily: GoogleFonts.poppins().fontFamily,
+                            fontFamily: GoogleFonts.recursive().fontFamily,
                             color: colorScheme.primary, // Highlight username
                           ),
                         ),
                         const TextSpan(text: '  '),
                         TextSpan(
                           style: TextStyle(
-                            fontFamily: GoogleFonts.poppins().fontFamily
+                            fontFamily: GoogleFonts.recursive().fontFamily,
                           ),
                           text: post.caption,
                         ),

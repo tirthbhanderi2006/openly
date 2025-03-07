@@ -60,9 +60,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetMaterialApp(
         navigatorObservers: [routeObserver],
-        title: 'Flutter Demo',
+        title: 'Openly',
         debugShowCheckedModeBanner: false,
-        theme: Provider.of<ThemeProvider>(context).themeData,
+        theme: Provider.of<ThemeProvider>(context).getThemeWithFont(),
         // home: AuthGate(),
         home: SplashScreen(),
         routes: {'home_page': (context) => const HomePage()}
