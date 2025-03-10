@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 import '../model/post_model.dart';
 
@@ -93,6 +94,33 @@ class ProfileController extends GetxController {
 
     // Fetch updated details for the target user after toggling follow
     fetchUserDetails(targetUserId);
+  }
+  Future<bool> checkVisitingUserIsBlocked(String visitingUserId) async {
+    try {
+      String currentUserId = FirebaseAuth.instance.currentUser!.uid;
+
+      // Check if the current user is blocked by the visiting user
+      DocumentSnapshot blockedByVisitingUser = await FirebaseFirestore.instance
+          .collection("users")
+          .doc(visitingUserId)
+          .collection("BlockedUsers")
+          .doc(currentUserId)
+          .get();
+
+      // Check if the visiting user is blocked by the current user
+      DocumentSnapshot blockedByCurrentUser = await FirebaseFirestore.instance
+          .collection("users")
+          .doc(currentUserId)
+          .collection("BlockedUsers")
+          .doc(visitingUserId)
+          .get();
+
+      // Return true if either user has blocked the other
+      return blockedByVisitingUser.exists || blockedByCurrentUser.exists;
+    } catch (e) {
+      print("Error checking block status: $e");
+      return false; // Return false in case of an error
+    }
   }
 
 }

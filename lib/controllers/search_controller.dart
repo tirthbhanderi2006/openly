@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 
 class SearchPageController extends GetxController {
@@ -12,29 +13,48 @@ class SearchPageController extends GetxController {
 
     isLoading.value = true;
     await Future.delayed(Duration(milliseconds: 1000));
+
     try {
-      // Lowercase query for case-insensitive search
       String lowercaseQuery = query.trim().toLowerCase();
+
+      // Get current user ID
+      String currentUserId = FirebaseAuth.instance.currentUser!.uid;
+
+      // Fetch blocked user IDs
+      QuerySnapshot blockedSnapshot = await FirebaseFirestore.instance
+          .collection("users")
+          .doc(currentUserId)
+          .collection("BlockedUsers")
+          .get();
+
+      List<String> blockedUserIds = blockedSnapshot.docs
+          .map((doc) => doc.id)
+          .toList(); // Extract blocked user IDs
+
       // Fetch all users
       QuerySnapshot snapshot =
-          await FirebaseFirestore.instance.collection("users").get();
+      await FirebaseFirestore.instance.collection("users").get();
 
-      // Filter results based on name or email containing the query
+      // Filter results based on name, email and remove blocked users
       searchResults.value = snapshot.docs
-          .map((doc) => doc.data() as Map<String, dynamic>)
+          .map((doc) {
+        var user = doc.data() as Map<String, dynamic>;
+        user['id'] = doc.id; // Ensure user ID is included
+        return user;
+      })
           .where((user) =>
-              (user['name']
-                      ?.toString()
-                      .toLowerCase()
-                      .contains(lowercaseQuery) ??
-                  false) ||
+      !blockedUserIds.contains(user['id']) && // Exclude blocked users
+          ((user['name']
+              ?.toString()
+              .toLowerCase()
+              .contains(lowercaseQuery) ??
+              false) ||
               (user['email']
-                      ?.toString()
-                      .toLowerCase()
-                      .contains(lowercaseQuery) ??
-                  false))
+                  ?.toString()
+                  .toLowerCase()
+                  .contains(lowercaseQuery) ??
+                  false)))
           .toList();
-      // print(searchResults.length);
     } catch (e) {
       print("Error fetching users: $e");
       searchResults.clear();

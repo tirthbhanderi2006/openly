@@ -6,6 +6,7 @@ import 'package:lottie/lottie.dart';
 import 'package:mithc_koko_chat_app/components/features_components/post_tile.dart';
 import 'package:mithc_koko_chat_app/components/widgets_components/user_grid.dart';
 import 'package:mithc_koko_chat_app/model/post_model.dart';
+import 'package:mithc_koko_chat_app/services/chat_services/chat_services.dart';
 import 'package:mithc_koko_chat_app/utils/page_transition/slide_up_page_transition.dart';
 import 'features/create_post_page.dart';
 
@@ -23,25 +24,6 @@ class HomePage extends StatelessWidget {
 
   AppBar _buildAppBar(BuildContext context) {
     return AppBar(
-      // actions: [
-      //   IconButton(
-      //     onPressed: () => Navigator.push(
-      //       context,
-      //       SlideLeftPageTransition(child: const CreatePostPage()),
-      //     ),
-      //     icon: const Icon(FlutterRemix.image_add_fill),
-      //   ),
-      //   Padding(
-      //     padding: const EdgeInsets.only(right: 8.0, bottom: 5),
-      //     child: IconButton(
-      //       onPressed: () => Navigator.push(
-      //         context,
-      //         SlideLeftPageTransition(child: const UsersPage()),
-      //       ),
-      //       icon: const Icon(FlutterRemix.chat_heart_line),
-      //     ),
-      //   ),
-      // ],
       title: const Text(
         "O P E N L Y",
         style: TextStyle(fontWeight: FontWeight.bold),
@@ -117,11 +99,6 @@ class HomePage extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Image.asset('lib/assets/happy-face.gif'),
-                    // Image.asset(
-                    //     height: 80,
-                    //     'lib/assets/cool.png'
-                    // ),
                     Lottie.asset('lib/assets/new-post.json'),
                     const SizedBox(height: 20),
                     Text(
@@ -191,13 +168,14 @@ class HomePage extends StatelessWidget {
 
   Widget _buildUserGrid(BuildContext context) {
     return StreamBuilder<List<Map<String, dynamic>>>(
-      stream: FirebaseFirestore.instance
-          .collection('users')
-          .where('uid', isNotEqualTo: FirebaseAuth.instance.currentUser!.uid)
-          .snapshots()
-          .map((snapshot) => snapshot.docs
-              .map((doc) => doc.data() as Map<String, dynamic>)
-              .toList()),
+      stream:  ChatServices().getUserStreamExcludingBlockedWithAllUsers(),
+      // stream: FirebaseFirestore.instance
+      //     .collection('users')
+      //     .where('uid', isNotEqualTo: FirebaseAuth.instance.currentUser!.uid)
+      //     .snapshots()
+      //     .map((snapshot) => snapshot.docs
+      //         .map((doc) => doc.data() as Map<String, dynamic>)
+      //         .toList()),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
@@ -273,11 +251,15 @@ class HomePage extends StatelessWidget {
                 },
               ),
             ),
+            GestureDetector(onTap: (){
+
+            },)
           ],
         );
       },
     );
   }
+
   /*
   ======> buildUserList() and _buildUserListItem() in comments below if needed👍🏻
   */

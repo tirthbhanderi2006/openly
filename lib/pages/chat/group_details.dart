@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_remix/flutter_remix.dart';
-import 'package:mithc_koko_chat_app/components/pofile_components/profile_picture.dart';
+import 'package:mithc_koko_chat_app/components/profile_components/profile_picture.dart';
 import 'package:mithc_koko_chat_app/components/widgets_components/user_tile.dart';
 import 'package:mithc_koko_chat_app/main.dart';
 import 'package:mithc_koko_chat_app/pages/chat/edit_group.dart';

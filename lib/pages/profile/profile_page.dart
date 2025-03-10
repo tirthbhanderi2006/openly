@@ -4,10 +4,10 @@ import 'package:flutter_remix/flutter_remix.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
-import 'package:mithc_koko_chat_app/components/pofile_components/profile_info.dart';
-import 'package:mithc_koko_chat_app/components/pofile_components/profile_picture.dart';
-import 'package:mithc_koko_chat_app/components/pofile_components/profile_post.dart';
-import 'package:mithc_koko_chat_app/components/pofile_components/bio_box.dart';
+import 'package:mithc_koko_chat_app/components/profile_components/profile_info.dart';
+import 'package:mithc_koko_chat_app/components/profile_components/profile_picture.dart';
+import 'package:mithc_koko_chat_app/components/profile_components/profile_post.dart';
+import 'package:mithc_koko_chat_app/components/profile_components/bio_box.dart';
 import 'package:mithc_koko_chat_app/controllers/navigation_controller.dart';
 import 'package:mithc_koko_chat_app/pages/profile/show_bookmarks.dart';
 import 'package:mithc_koko_chat_app/pages/settings/setting_page.dart';
@@ -201,7 +201,6 @@ class _ProfilePageState extends State<ProfilePage> with RouteAware {
                         )
                       : SizedBox.shrink(),
                   const SizedBox(height: 25),
-
                   Row(
                     children: [
                       Expanded(

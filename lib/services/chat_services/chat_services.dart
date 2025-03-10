@@ -97,6 +97,31 @@ class ChatServices {
     });
   }
 
+  Stream<List<Map<String, dynamic>>> getUserStreamExcludingBlockedWithAllUsers() {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    return _firestore
+        .collection("users")
+        .doc(currentUser!.uid)
+        .collection("BlockedUsers")
+        .snapshots()
+        .asyncMap((snapshot) async {
+      // Get blocked userIds
+      final blockUserIds = snapshot.docs.map((doc) => doc.id).toList();
+
+      // Get the current user's following list
+      final followingList = await getFollowingList(currentUser.uid);
+
+      // Get all users
+      final usersSnapshot = await _firestore.collection("users").get();
+
+      return usersSnapshot.docs
+          .where((doc) =>
+      doc.data()['email'] != currentUser.email &&
+          !blockUserIds.contains(doc.id))
+          .map((doc) => doc.data())
+          .toList();
+    });
+  }
 // Function to get the current user's username
   Future<List<dynamic>> getFollowingList(String userId) async {
     try {
