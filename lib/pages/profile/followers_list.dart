@@ -183,7 +183,7 @@ class FollowersList extends StatelessWidget {
   }
 
   // check checkIfFollowing
-  checkIfFollowing(
+  Future<bool> checkIfFollowing(
       {required BuildContext context, required String receiverId}) async {
     // Fetch the current user's following list
     followingList = await ChatServices()

@@ -166,99 +166,103 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildUserGrid(BuildContext context) {
-    return StreamBuilder<List<Map<String, dynamic>>>(
-      stream:  ChatServices().getUserStreamExcludingBlockedWithAllUsers(),
-      // stream: FirebaseFirestore.instance
-      //     .collection('users')
-      //     .where('uid', isNotEqualTo: FirebaseAuth.instance.currentUser!.uid)
-      //     .snapshots()
-      //     .map((snapshot) => snapshot.docs
-      //         .map((doc) => doc.data() as Map<String, dynamic>)
-      //         .toList()),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
+    Widget _buildUserGrid(BuildContext context) {
+      return StreamBuilder<List<Map<String, dynamic>>>(
+        stream:  ChatServices().getUserStreamExcludingBlockedWithAllUsers(),
+        // stream: FirebaseFirestore.instance
+        //     .collection('users')
+        //     .where('uid', isNotEqualTo: FirebaseAuth.instance.currentUser!.uid)
+        //     .snapshots()
+        //     .map((snapshot) => snapshot.docs
+        //         .map((doc) => doc.data() as Map<String, dynamic>)
+        //         .toList()),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-        if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}'));
-        }
+          if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          }
 
-        final users = snapshot.data ?? [];
-        if (users.isEmpty) {
-          return const Center(child: Text('No users found.'));
-        }
+          final users = snapshot.data ?? [];
+          if (users.isEmpty) {
+            return const Center(child: Text('No users found.'));
+          }
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(15.0),
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Theme.of(context).colorScheme.primary,
-                      Theme.of(context).colorScheme.inversePrimary,
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(15),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Colors.black26,
-                      blurRadius: 5,
-                      offset: Offset(0, 2),
-                    ),
-                  ],
-                ),
-                padding: const EdgeInsets.all(12.0),
-                child: const Text(
-                  'New Faces to Discover!',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                    letterSpacing: 1.5,
-                    shadows: [
-                      Shadow(
-                        offset: Offset(1, 1),
-                        blurRadius: 3,
-                        color: Colors.black38,
+          return SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(15.0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Theme.of(context).colorScheme.primary,
+                          Theme.of(context).colorScheme.inversePrimary,
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
-                    ],
+                      borderRadius: BorderRadius.circular(15),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Colors.black26,
+                          blurRadius: 5,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    padding: const EdgeInsets.all(12.0),
+                    child: const Text(
+                      'New Faces to Discover!',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                        letterSpacing: 1.5,
+                        shadows: [
+                          Shadow(
+                            offset: Offset(1, 1),
+                            blurRadius: 3,
+                            color: Colors.black38,
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            ),
-            Expanded(
-              child: GridView.builder(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 5,
-                  mainAxisSpacing: 5,
+                SizedBox(
+                  height: 500, // Adjust this height based on screen size
+                  child: GridView.builder(
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 5,
+                      mainAxisSpacing: 5,
+                    ),
+                    itemCount: users.length,
+                    itemBuilder: (context, index) {
+                      final userData = users[index];
+                      return UserGrid(
+                        userId: userData['uid'],
+                        userName: userData['name'],
+                        userImage: userData['profilePic'],
+                      );
+                    },
+                  ),
                 ),
-                itemCount: users.length,
-                itemBuilder: (context, index) {
-                  final userData = users[index];
-                  return UserGrid(
-                    userId: userData['uid'],
-                    userName: userData['name'],
-                    userImage: userData['profilePic'],
-                  );
-                },
-              ),
+                GestureDetector(
+                  onTap: () {},
+                )
+              ],
             ),
-            GestureDetector(onTap: (){
+          );
 
-            },)
-          ],
-        );
-      },
-    );
-  }
+        },
+      );
+    }
 
   /*
   ======> buildUserList() and _buildUserListItem() in comments below if needed👍🏻

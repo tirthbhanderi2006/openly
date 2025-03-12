@@ -8,6 +8,7 @@ class SearchPageController extends GetxController {
   var searchPerformed = false.obs;
   var hasSearched = false.obs;
 
+
   void fetchUsers(String query) async {
     if (query.isEmpty) return;
 

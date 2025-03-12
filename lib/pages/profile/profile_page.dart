@@ -155,10 +155,6 @@ class _ProfilePageState extends State<ProfilePage> with RouteAware {
               padding: const EdgeInsets.symmetric(horizontal: 25.0),
               child: Column(
                 children: [
-                  // Text(
-                  //   userDetails['email'] ?? 'No email',
-                  //   style: TextStyle(fontSize:10,color: Theme.of(context).colorScheme.inversePrimary),
-                  // ),
                   const SizedBox(height: 25),
 
                   Row(
@@ -166,7 +162,6 @@ class _ProfilePageState extends State<ProfilePage> with RouteAware {
                       // Profile Image
                       ProfileImageWithPreview(
                           profilePicUrl: userDetails['profilePic'] ?? ''),
-
                       // old code is present in the profile_image.dart file as a comment
                       Obx(
                         () => UserProfileStats(
