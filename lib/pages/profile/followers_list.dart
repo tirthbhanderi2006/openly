@@ -65,17 +65,10 @@ class FollowersList extends StatelessWidget {
             child: Text('Error: ${snapshot.error}'),
           );
         } else if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
-          return FutureBuilder(
-            future: Future.delayed(
-                const Duration(milliseconds: 1000), () => snapshot.data!.docs),
-            builder: (context, futureSnapshot) {
-              if (futureSnapshot.connectionState == ConnectionState.waiting) {
-                // Show skeleton loader during delay
-                return _buildSkeletonLoader();
-              }
+          
 
               // Extract user data after the delay
-              final users = futureSnapshot.data!;
+              final users = snapshot.data!.docs;
               return SlidableAutoCloseBehavior(
                 child: ListView.builder(
                   itemCount: users.length,
@@ -149,8 +142,6 @@ class FollowersList extends StatelessWidget {
                     );
                   },
                 ),
-              );
-            },
           );
         } else {
           return Center(

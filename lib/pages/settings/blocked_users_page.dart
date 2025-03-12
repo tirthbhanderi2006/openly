@@ -49,18 +49,10 @@ class BlockedUsersPage extends StatelessWidget {
           return emptyChatWidget(context);
         }
 
-        return FutureBuilder<List<Map<String, dynamic>>>(
-          future: Future.delayed(
-              const Duration(milliseconds: 1000), () => blockedUsers),
-          builder: (context, futureSnapshot) {
-            if (futureSnapshot.connectionState == ConnectionState.waiting) {
-              return _buildSkeletonLoader(); // Show skeleton loader during the delay
-            }
-
-            return ListView.builder(
-              itemCount: futureSnapshot.data!.length,
+        return ListView.builder(
+              itemCount: snapshot.data!.length,
               itemBuilder: (context, index) {
-                final user = futureSnapshot.data![index];
+                final user = snapshot.data![index];
                 return UserTile(
                   text: user['email'],
                   onTap: () =>
@@ -70,8 +62,6 @@ class BlockedUsersPage extends StatelessWidget {
                 );
               },
             );
-          },
-        );
       },
     );
   }

@@ -6,6 +6,7 @@ import 'package:mithc_koko_chat_app/components/features_components/search_user_t
 import 'package:mithc_koko_chat_app/controllers/search_controller.dart';
 import 'package:mithc_koko_chat_app/utils/page_transition/slide_up_page_transition.dart';
 import 'package:mithc_koko_chat_app/pages/profile/profile_page.dart';
+import 'package:mithc_koko_chat_app/utils/themes/theme_provider.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class SearchPage extends StatelessWidget {
@@ -35,9 +36,11 @@ class SearchPage extends StatelessWidget {
   }
 
   Widget _buildSearchField() {
+    bool isDark = ThemeProvider().isDarkMode;
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: TextField(
+        style: TextStyle(color: isDark ? Colors.white : Colors.black),
         decoration: InputDecoration(
           hintText: "Search by email...",
           prefixIcon: const Icon(FlutterRemix.user_search_line),
@@ -85,7 +88,7 @@ class SearchPage extends StatelessWidget {
             final user = controller.searchResults[index];
             return SearchUserTile(
               userName: user['name'] ?? 'Unknown',
-              userId: user['userId'] ?? '',
+              userId: user['uid'] ?? '',
               imgUrl: user['profilePic'],
               email: user['email'] ?? '',
               onTap: () => Navigator.push(

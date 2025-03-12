@@ -35,9 +35,9 @@ class _ProfilePageState extends State<ProfilePage> with RouteAware {
 
   @override
   void initState() {
+    super.initState();
     profileController.fetchUserDetails(widget.userId);
     profileController.fetchUserPosts(widget.userId);
-    super.initState();
   }
 
   @override
@@ -156,7 +156,6 @@ class _ProfilePageState extends State<ProfilePage> with RouteAware {
               child: Column(
                 children: [
                   const SizedBox(height: 25),
-
                   Row(
                     children: [
                       // Profile Image

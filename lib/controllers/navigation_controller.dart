@@ -27,13 +27,14 @@ class NavigationController extends GetxController with WidgetsBindingObserver {
 
   void changeIndex(value) {
     currentIndex.value = value;
+    // throw Exception('this is test exception');
   }
 
   void updateScrollVisibility(double scrollPosition) {
-    // Show bottom bar when scrolling up, hide when scrolling down
+    // Adjust the threshold to avoid pixel overflow error
     if (scrollPosition > lastScrollPosition.value &&
         isBottomBarVisible.value &&
-        scrollPosition > 100) {
+        scrollPosition > 150) {
       isBottomBarVisible.value = false;
     } else if (scrollPosition < lastScrollPosition.value &&
         !isBottomBarVisible.value) {

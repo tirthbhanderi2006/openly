@@ -210,8 +210,7 @@ class MyBottomBar extends StatelessWidget {
           width: 50,
           decoration: BoxDecoration(
             color: isSelected ? Colors.grey.shade800 : Colors.grey.shade600,
-            borderRadius:
-                BorderRadius.circular(20), 
+            borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
                 color: Colors.white.withOpacity(isSelected ? 0.5 : 0.3),

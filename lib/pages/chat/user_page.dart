@@ -61,24 +61,11 @@ class _UsersPageState extends State<UsersPage> {
           return emptyUserAnimation(context);
         }
 
-        // Apply delay before showing actual data
-        return FutureBuilder(
-          future: Future.delayed(
-              const Duration(milliseconds: 1000), () => snapshot.data!),
-          builder: (context, futureSnapshot) {
-            if (futureSnapshot.connectionState == ConnectionState.waiting) {
-              // Show skeleton loader during delay
-              return _buildSkeletonLoader();
-            }
-
-            // Build the user list after the delay
-            return ListView(
-              children: futureSnapshot.data!
+        return ListView(
+              children: snapshot.data!
                   .map((userData) => _buildUsersListItem(userData, context))
                   .toList(),
             );
-          },
-        );
       },
     );
   }

@@ -13,7 +13,7 @@ class SearchPageController extends GetxController {
     if (query.isEmpty) return;
 
     isLoading.value = true;
-    await Future.delayed(Duration(milliseconds: 1000));
+    // await Future.delayed(Duration(milliseconds: 1000));
 
     try {
       String lowercaseQuery = query.trim().toLowerCase();
