@@ -135,7 +135,7 @@ class _GroupDetailsState extends State<GroupDetails> with RouteAware {
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
-                ProfileImageWithPreview(
+                ProfilePicture(
                   profilePicUrl: groupImage,
                 ),
                 // Group Image

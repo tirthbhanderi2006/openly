@@ -41,7 +41,9 @@ android {
         }
     }
 }
-
+dependencies {
+    implementation 'com.guardsquare:proguard-annotations:7.3.2'  // Fix for ProGuard @Keep
+}
 flutter {
     source = "../.."
 }

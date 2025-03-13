@@ -155,47 +155,31 @@ class _ProfilePageState extends State<ProfilePage> with RouteAware {
               padding: const EdgeInsets.symmetric(horizontal: 25.0),
               child: Column(
                 children: [
-                  const SizedBox(height: 25),
-                  Row(
+                  //const SizedBox(height: 25),
+                  /*Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       // Profile Image
                       ProfileImageWithPreview(
                           profilePicUrl: userDetails['profilePic'] ?? ''),
                       // old code is present in the profile_image.dart file as a comment
-                      Obx(
-                        () => UserProfileStats(
-                            userId: userDetails['uid'],
-                            name: userDetails['name'],
-                            followers: profileController.followers,
-                            following: profileController.following,
-                            postsCount: profileController.posts.length),
-                      ),
                     ],
+                  ),*/
+                  Obx(
+                        () => UserProfileStats(
+                          email: userDetails['email'],
+                          profileImageUrl: userDetails['profilePic'],
+                          userId: userDetails['uid'],
+                          name: userDetails['name'],
+                          followers: profileController.followers,
+                          following: profileController.following,
+                          postsCount: profileController.posts.length),
                   ),
-                  const SizedBox(height: 25),
-                  userDetails['bio'].toString().isNotEmpty
-                      ? Padding(
-                          padding: const EdgeInsets.only(left: 8.0),
-                          child: Row(
-                            children: [
-                              Text(
-                                'Bio',
-                                style: TextStyle(
-                                  color: Theme.of(context).colorScheme.primary,
-                                ),
-                              ),
-                            ],
-                          ),
-                        )
-                      : SizedBox.shrink(),
-                  const SizedBox(height: 10),
-                  userDetails['bio'].toString().isNotEmpty
-                      ? BioBox(
-                          bioText: userDetails['bio'] ?? "No bio available",
-                        )
-                      : SizedBox.shrink(),
-                  const SizedBox(height: 25),
-                  Row(
+
+                  const SizedBox(height: 15),
+                  FirebaseAuth.instance.currentUser!.uid !=
+                      widget.userId
+                      ? Row(
                     children: [
                       Expanded(
                         child: FirebaseAuth.instance.currentUser!.uid !=
@@ -275,9 +259,32 @@ class _ProfilePageState extends State<ProfilePage> with RouteAware {
                             : Text(""),
                       ),
                     ],
-                  ),
+                  )
+                      :SizedBox.shrink(),
+                  userDetails['bio'].toString().isNotEmpty? const SizedBox(height: 15):SizedBox.shrink(),
+                  userDetails['bio'].toString().isNotEmpty
+                      ? Padding(
+                    padding: const EdgeInsets.only(left: 8.0),
+                    child: Row(
+                      children: [
+                        Text(
+                          'Bio',
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                      : SizedBox.shrink(),
+                  const SizedBox(height: 10),
+                  userDetails['bio'].toString().isNotEmpty
+                      ? BioBox(
+                    bioText: userDetails['bio'] ?? "No bio available",
+                  )
+                      : SizedBox.shrink(),
                   SizedBox(
-                    height: 15,
+                    height: 2,
                   ),
                 ],
               ),
@@ -286,7 +293,7 @@ class _ProfilePageState extends State<ProfilePage> with RouteAware {
           const SizedBox(height: 10),
           // Posts
           Padding(
-            padding: const EdgeInsets.only(left: 14.0, top: 25),
+            padding: const EdgeInsets.only(left: 14.0, top: 0),
             child: Row(
               children: [
                 Text(
@@ -310,11 +317,11 @@ class _ProfilePageState extends State<ProfilePage> with RouteAware {
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     SizedBox(
-                      height: 30,
+                      height: 20,
                     ),
-                    Lottie.asset('lib/assets/no-post.json', height: 180),
+                    Lottie.asset('lib/assets/no-post.json', height: 150),
                     SizedBox(
-                      height: 8,
+                      height: 6,
                     ),
                     Text(
                       "No posts yet!!",
