@@ -159,18 +159,6 @@ class ShowGroup extends StatelessWidget {
           );
         },
       ),
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 72.0,right: 5),
-        child: FloatingActionButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              SlideUpNavigationAnimation(child: CreateGroupScreen()),
-            );
-          },
-          child: Icon(FlutterRemix.group_2_line),
-        ),
-      ),
     );
   }
 }

@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 import 'package:mithc_koko_chat_app/controllers/group_chat_controller.dart';
 import 'package:mithc_koko_chat_app/services/chat_services/chat_services.dart';
+import 'package:mithc_koko_chat_app/utils/themes/theme_provider.dart';
 
 class CreateGroupScreen extends StatefulWidget {
   const CreateGroupScreen({super.key});
@@ -26,6 +27,8 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    bool isDark = ThemeProvider().isDarkMode;
+
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.background,
       appBar: AppBar(
@@ -35,10 +38,11 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
         ),
         centerTitle: true,
         backgroundColor: Colors.transparent,
+        elevation: 0,
         foregroundColor: Theme.of(context).colorScheme.primary,
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -48,12 +52,18 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
               decoration: InputDecoration(
                 labelText: "Group Name",
                 prefixIcon: const Icon(Icons.group),
+                filled: true,
+                fillColor: isDark
+                    ? Colors.grey[900]
+                    : Theme.of(context).colorScheme.surface,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12.0),
+                  borderSide: BorderSide.none,
                 ),
               ),
+              style: TextStyle(color: isDark ? Colors.white : Colors.black),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
 
             // User Selection List
             Expanded(
@@ -63,32 +73,55 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                   if (!snapshot.hasData) {
                     return const Center(child: CircularProgressIndicator());
                   }
-                  if(snapshot.data!.isEmpty){
-                    return const Center(child: Text("No users found!"),);
+                  if (snapshot.data!.isEmpty) {
+                    return Center(
+                      child: Text(
+                        "No users found!",
+                        style: TextStyle(
+                            fontSize: 16,
+                            color: isDark ? Colors.white : Colors.black),
+                      ),
+                    );
                   }
 
                   var users = snapshot.data!;
-                  return ListView.builder(
+                  return ListView.separated(
                     itemCount: users.length,
+                    separatorBuilder: (context, index) => Divider(
+                      color: isDark ? Colors.grey[800] : Colors.grey[300],
+                    ),
                     itemBuilder: (context, index) {
                       var user = users[index];
                       String userId = user['uid'];
                       String username = user['name'];
                       String email = user['email'];
                       String profilePic = user['profilePic'] ??
-                          "https://via.placeholder.com/150"; // Default avatar
+                          "https://via.placeholder.com/150";
 
                       return Obx(
                         () => ListTile(
+                          contentPadding: const EdgeInsets.symmetric(
+                              vertical: 8, horizontal: 12),
                           leading: CircleAvatar(
-                            backgroundImage: CachedNetworkImageProvider(profilePic),
-                            radius: 25,
+                            backgroundImage:
+                                CachedNetworkImageProvider(profilePic),
+                            radius: 28,
                           ),
-                          title: Text(username,
-                              style:
-                                  const TextStyle(fontWeight: FontWeight.bold)),
-                          subtitle:
-                              Text(email, style: const TextStyle(fontSize: 12)),
+                          title: Text(
+                            username,
+                            style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 16,
+                                color: isDark ? Colors.white : Colors.black),
+                          ),
+                          subtitle: Text(
+                            email,
+                            style: TextStyle(
+                                fontSize: 14,
+                                color: isDark
+                                    ? Colors.grey[400]
+                                    : Colors.grey[600]),
+                          ),
                           trailing: Checkbox(
                             value: groupChatController.selectedUsers
                                 .contains(userId),
@@ -110,6 +143,8 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
               ),
             ),
 
+            const SizedBox(height: 16),
+
             // Create Group Button
             Obx(
               () => SizedBox(
@@ -118,14 +153,29 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                   onPressed:
                       groupChatController.isLoading.value ? null : _createGroup,
                   style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    textStyle: const TextStyle(fontSize: 16),
+                    elevation: 2,
+                    backgroundColor: isDark
+                        ? Colors.grey[800]
+                        : Theme.of(context).colorScheme.primary,
+                    foregroundColor: isDark
+                        ? Colors.white
+                        : Colors.black, // Fix applied here
+                    textStyle: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                   child: groupChatController.isLoading.value
-                      ? const CircularProgressIndicator(color: Colors.white)
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                              color: Colors.white, strokeWidth: 2),
+                        )
                       : const Text("Create Group"),
                 ),
               ),

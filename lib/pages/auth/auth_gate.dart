@@ -9,21 +9,30 @@ class AuthGate extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: StreamBuilder(stream:
-      FirebaseAuth.instance.authStateChanges(),
+      body: StreamBuilder<User?>(
+        stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {
-        // show loader if waiting to prevent any lag
-        if(snapshot.connectionState==ConnectionState.waiting){
-          return Center(child: CircularProgressIndicator(),);
-        }
-        // user loin or not?
-        if(snapshot.hasData){
-          return MainHome();//if user login then return HomePage
-            // return HomePage();
-        }else{
-          return LoginOrRegister(); //if user not login then return LoginPage
-        }
-      },),
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          Future.delayed(Duration.zero, () {
+            if (snapshot.hasData) {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) =>  MainHome()),
+              );
+            } else {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => LoginOrRegister()),
+              );
+            }
+          });
+
+          return const Center(child: CircularProgressIndicator());
+        },
+      ),
     );
   }
 }

@@ -62,10 +62,10 @@ class _UsersPageState extends State<UsersPage> {
         }
 
         return ListView(
-              children: snapshot.data!
-                  .map((userData) => _buildUsersListItem(userData, context))
-                  .toList(),
-            );
+          children: snapshot.data!
+              .map((userData) => _buildUsersListItem(userData, context))
+              .toList(),
+        );
       },
     );
   }
@@ -132,10 +132,7 @@ class _UsersPageState extends State<UsersPage> {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Theme.of(context)
-                      .textTheme
-                      .bodyLarge
-                      ?.color, // Adapts text color
+                  color: Theme.of(context).colorScheme.onBackground,
                 ),
               ),
             ],

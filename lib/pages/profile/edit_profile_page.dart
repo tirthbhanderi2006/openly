@@ -57,8 +57,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
         //       content: Text('Profile picture updated successfully!')),
         // );
         Get.snackbar("Profile", "Profile picture updated successfully!",
-          colorText: Colors.white,
-          backgroundColor: Colors.green,
+            colorText: Colors.white,
+            backgroundColor: Colors.green,
             snackPosition: SnackPosition.BOTTOM);
       }
     } catch (e) {
@@ -95,8 +95,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
           //   const SnackBar(content: Text('Profile updated successfully!')),
           // );
           Get.snackbar("Profile", "Profile updated successfully!",
-          colorText: Colors.white,
-          backgroundColor: Colors.green,
+              colorText: Colors.white,
+              backgroundColor: Colors.green,
               snackPosition: SnackPosition.BOTTOM);
 
           Navigator.pop(context);
@@ -121,27 +121,27 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context).colorScheme;
+    final colorScheme = Theme.of(context).colorScheme;
     final String? userId = FirebaseAuth.instance.currentUser?.uid;
 
     if (userId == null) {
       return Scaffold(
-        backgroundColor: theme.background,
+        backgroundColor: colorScheme.background,
         body: Center(
           child: Text(
             "User not signed in.",
-            style: TextStyle(color: theme.error),
+            style: TextStyle(color: colorScheme.error),
           ),
         ),
       );
     }
 
     return Scaffold(
-      backgroundColor: theme.background,
+      backgroundColor: colorScheme.background,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        foregroundColor: theme.primary,
+        foregroundColor: colorScheme.primary,
         title: const Text(
           'Edit Profile',
           style: TextStyle(fontWeight: FontWeight.bold),
@@ -150,7 +150,16 @@ class _EditProfilePageState extends State<EditProfilePage> {
         actions: [
           IconButton(
             onPressed: _isUpdating ? null : _updateProfile,
-            icon: const Icon(FlutterRemix.upload_cloud_2_line),
+            icon: _isUpdating
+                ? SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: colorScheme.primary,
+                    ),
+                  )
+                : const Icon(FlutterRemix.check_line),
           ),
         ],
       ),
@@ -162,7 +171,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(
-              child: CircularProgressIndicator(color: theme.primary),
+              child: CircularProgressIndicator(color: colorScheme.primary),
             );
           }
 
@@ -170,7 +179,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
             return Center(
               child: Text(
                 "Failed to load user details.",
-                style: TextStyle(color: theme.error),
+                style: TextStyle(color: colorScheme.error),
               ),
             );
           }
@@ -179,7 +188,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
             return Center(
               child: Text(
                 "No user details available.",
-                style: TextStyle(color: theme.error),
+                style: TextStyle(color: colorScheme.error),
               ),
             );
           }
@@ -198,124 +207,154 @@ class _EditProfilePageState extends State<EditProfilePage> {
           _profilePicUrl ??= userDetails['profilePic'];
 
           return SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    // Profile Picture Section
-                    GestureDetector(
+            padding: const EdgeInsets.all(24.0),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Simple, clean profile picture
+                  Center(
+                    child: GestureDetector(
                       onTap: _isUpdating ? null : _selectProfilePicture,
-                      child: Container(
-                        height: 150,
-                        width: 150,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: LinearGradient(
-                            colors: [
-                              theme.primary.withOpacity(0.2),
-                              theme.secondary.withOpacity(0.2)
-                            ],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: theme.primary.withOpacity(0.2),
-                              blurRadius: 10,
-                              offset: const Offset(0, 5),
-                            ),
-                          ],
-                        ),
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            if (_profilePicUrl != null)
-                              CircleAvatar(
-                                radius: 70,
-                                backgroundImage:
-                                    CachedNetworkImageProvider(_profilePicUrl!),
-                              )
-                            else
-                              Icon(
-                                Icons.person,
-                                size: 80,
-                                color: theme.primary,
+                      child: Stack(
+                        children: [
+                          Container(
+                            height: 120,
+                            width: 120,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: colorScheme.surfaceVariant,
+                              border: Border.all(
+                                color: colorScheme.primary.withOpacity(0.3),
+                                width: 2,
                               ),
-                            if (!_isUpdating)
-                              Positioned(
-                                bottom: 0,
-                                right: 0,
-                                child: Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    color: theme.primary,
-                                    shape: BoxShape.circle,
+                            ),
+                            child: _profilePicUrl != null
+                                ? ClipOval(
+                                    child: CachedNetworkImage(
+                                      imageUrl: _profilePicUrl!,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  )
+                                : Icon(
+                                    FlutterRemix.user_3_fill,
+                                    size: 60,
+                                    color: colorScheme.primary.withOpacity(0.7),
                                   ),
-                                  child: Icon(
-                                    Icons.edit,
-                                    size: 20,
-                                    color: theme.onPrimary,
+                          ),
+                          if (!_isUpdating)
+                            Positioned(
+                              bottom: 0,
+                              right: 0,
+                              child: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: colorScheme.primary,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: colorScheme.background,
+                                    width: 2,
                                   ),
                                 ),
+                                child: Icon(
+                                  FlutterRemix.camera_line,
+                                  size: 16,
+                                  color: colorScheme.onPrimary,
+                                ),
                               ),
-                          ],
-                        ),
+                            ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 30),
-                    // Name Section
-                    Text(
-                      "Name",
-                      style: TextStyle(
-                        color: theme.primary,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    MyTextfield(
-                      editable: !_isUpdating,
-                      hintText: "Add your name",
-                      obscureText: false,
-                      controller: _nameController,
-                      focusNode: null,
-                      textColor: theme.onBackground,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your name';
-                        }
-                        if (value.length < 4) {
-                          return 'minimum length should be 4';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 20),
+                  ),
 
-                    // Bio Section
-                    Text(
-                      "Bio",
-                      style: TextStyle(
-                        color: theme.primary,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                  const SizedBox(height: 40),
+
+                  // Name field
+                  Text(
+                    "Name",
+                    style: TextStyle(
+                      color: colorScheme.primary,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  MyTextfield(
+                    editable: !_isUpdating,
+                    hintText: "Add your name",
+                    obscureText: false,
+                    controller: _nameController,
+                    focusNode: null,
+                    textColor: colorScheme.onBackground,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your name';
+                      }
+                      if (value.length < 4) {
+                        return 'minimum length should be 4';
+                      }
+                      return null;
+                    },
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Bio field
+                  Text(
+                    "Bio",
+                    style: TextStyle(
+                      color: colorScheme.primary,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  MyTextfield(
+                    editable: !_isUpdating,
+                    hintText: "Write something about yourself...",
+                    obscureText: false,
+                    controller: _bioTextController,
+                    focusNode: null,
+                    textColor: colorScheme.onBackground,
+                  ),
+
+                  const SizedBox(height: 40),
+
+                  // Simple save button
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _isUpdating ? null : _updateProfile,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: colorScheme.primary,
+                        foregroundColor: colorScheme.onPrimary,
+                        padding: const EdgeInsets.symmetric(vertical: 15),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        elevation: 0,
                       ),
+                      child: _isUpdating
+                          ? const SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Text(
+                              "Save Changes",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                     ),
-                    const SizedBox(height: 10),
-                    MyTextfield(
-                      editable: !_isUpdating,
-                      hintText: "Write something about yourself...",
-                      obscureText: false,
-                      controller: _bioTextController,
-                      focusNode: null,
-                      textColor: theme.onBackground,
-                    ),
-                    const SizedBox(height: 30),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           );
