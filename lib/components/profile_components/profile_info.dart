@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mithc_koko_chat_app/components/profile_components/profile_picture.dart';
 import 'package:mithc_koko_chat_app/controllers/profile_controller.dart';
+import 'package:mithc_koko_chat_app/pages/profile/all_posts.dart';
 import 'package:mithc_koko_chat_app/pages/profile/followers_list.dart';
 import 'package:mithc_koko_chat_app/utils/page_transition/slide_up_page_transition.dart';
+
 class UserProfileStats extends StatelessWidget {
   final String name;
   final String userId;
@@ -13,16 +15,15 @@ class UserProfileStats extends StatelessWidget {
   final String profileImageUrl;
   final String email;
 
-  const UserProfileStats({
-    super.key,
-    required this.userId,
-    required this.name,
-    required this.followers,
-    required this.following,
-    required this.postsCount,
-    required this.profileImageUrl,
-  required this.email
-  });
+  const UserProfileStats(
+      {super.key,
+      required this.userId,
+      required this.name,
+      required this.followers,
+      required this.following,
+      required this.postsCount,
+      required this.profileImageUrl,
+      required this.email});
 
   @override
   Widget build(BuildContext context) {
@@ -46,8 +47,7 @@ class UserProfileStats extends StatelessWidget {
                   width: 2,
                 ),
               ),
-              child:  ProfilePicture(
-                  profilePicUrl: profileImageUrl ?? ''),
+              child: ProfilePicture(profilePicUrl: profileImageUrl ?? ''),
             ),
           ),
 
@@ -119,7 +119,12 @@ class UserProfileStats extends StatelessWidget {
                 context: context,
                 label: "Posts",
                 count: postsCount,
-                onTap: () {/*navigate to all post page */},
+                onTap: () {
+                  Navigator.push(
+                      context,
+                      SlideUpNavigationAnimation(
+                          child: AllPosts(userId: userId)));
+                },
               ),
             ],
           ),

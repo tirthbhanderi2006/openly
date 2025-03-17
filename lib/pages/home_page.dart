@@ -7,6 +7,7 @@ import 'package:mithc_koko_chat_app/components/features_components/post_tile.dar
 import 'package:mithc_koko_chat_app/components/widgets_components/user_grid.dart';
 import 'package:mithc_koko_chat_app/model/post_model.dart';
 import 'package:mithc_koko_chat_app/utils/page_transition/slide_up_page_transition.dart';
+import '../components/widgets_components/create_post_button.dart';
 import 'features/create_post_page.dart';
 
 class HomePage extends StatelessWidget {
@@ -132,10 +133,13 @@ class HomePage extends StatelessWidget {
                         fontWeight: FontWeight.normal,
                       ),
                     ),
-                    SizedBox(height: 10,),
+                    SizedBox(
+                      height: 10,
+                    ),
                     ShaderMask(
                       shaderCallback: (bounds) {
-                        final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+                        final isDarkMode =
+                            Theme.of(context).brightness == Brightness.dark;
                         return LinearGradient(
                           colors: isDarkMode
                               ? [Colors.white, Colors.grey.shade500]
@@ -157,23 +161,8 @@ class HomePage extends StatelessWidget {
 
                     // const SizedBox(height: 10), // Spacing
                     const SizedBox(height: 30), // Spacing
-                    ElevatedButton.icon(
-                      onPressed: () {
-                        Navigator.push(context, SlideUpNavigationAnimation(child: CreatePostPage()));
-                      },
-                      icon: const Icon(FlutterRemix.add_circle_line, color: Colors.black),
-                      label: Text(
-                        'Create a Post',
-                        style: TextStyle(color:Colors.black),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.primary,
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                    ),
+                    //create Post Button
+                    CreatePostButton(),
                   ],
                 ),
               );
@@ -278,73 +267,73 @@ class HomePage extends StatelessWidget {
       },
     );
   }
-  /*
+/*
   ======> buildUserList() and _buildUserListItem() in comments below if needed👍🏻
   */
 
-  // Widget _buildUsersList() {
-  //   return StreamBuilder<List<Map<String, dynamic>>>(
-  //     stream: ChatServices().getUserStreamExcludingBlocked(),
-  //     builder: (context, snapshot) {
-  //       if (snapshot.hasError) {
-  //         return Center(
-  //           child: Text("Error: ${snapshot.error}"),
-  //         );
-  //       }
-  //
-  //       if (snapshot.connectionState == ConnectionState.waiting) {
-  //         return const Center(
-  //           child: CircularProgressIndicator(), // Improved loading indicator
-  //         );
-  //       }
-  //
-  //       // Check if snapshot has data
-  //       if (!snapshot.hasData || snapshot.data!.isEmpty) {
-  //         return const Center(
-  //           child: Text("No users found."),
-  //         );
-  //       }
-  //
-  //       // Build the user list
-  //       return Column(
-  //         crossAxisAlignment: CrossAxisAlignment.start,
-  //         children: [
-  //           // Add a title
-  //           Padding(
-  //             padding: const EdgeInsets.all(18.0), // Adjust padding as needed
-  //             child: Text(
-  //               '''"Openly: Discover, Connect, Share."''',
-  //               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-  //                 fontWeight: FontWeight.bold,
-  //               ), // Use your desired style
-  //             ),
-  //           ),
-  //
-  //           // Add the ListView
-  //           Expanded( // Make sure ListView takes the available space
-  //             child: ListView(
-  //               children: snapshot.data!
-  //                   .map((userData) => _buildUsersListItem(userData, context))
-  //                   .toList(),
-  //             ),
-  //           ),
-  //         ],
-  //       );
-  //     },
-  //   );
-  // }
+// Widget _buildUsersList() {
+//   return StreamBuilder<List<Map<String, dynamic>>>(
+//     stream: ChatServices().getUserStreamExcludingBlocked(),
+//     builder: (context, snapshot) {
+//       if (snapshot.hasError) {
+//         return Center(
+//           child: Text("Error: ${snapshot.error}"),
+//         );
+//       }
+//
+//       if (snapshot.connectionState == ConnectionState.waiting) {
+//         return const Center(
+//           child: CircularProgressIndicator(), // Improved loading indicator
+//         );
+//       }
+//
+//       // Check if snapshot has data
+//       if (!snapshot.hasData || snapshot.data!.isEmpty) {
+//         return const Center(
+//           child: Text("No users found."),
+//         );
+//       }
+//
+//       // Build the user list
+//       return Column(
+//         crossAxisAlignment: CrossAxisAlignment.start,
+//         children: [
+//           // Add a title
+//           Padding(
+//             padding: const EdgeInsets.all(18.0), // Adjust padding as needed
+//             child: Text(
+//               '''"Openly: Discover, Connect, Share."''',
+//               style: Theme.of(context).textTheme.titleMedium?.copyWith(
+//                 fontWeight: FontWeight.bold,
+//               ), // Use your desired style
+//             ),
+//           ),
+//
+//           // Add the ListView
+//           Expanded( // Make sure ListView takes the available space
+//             child: ListView(
+//               children: snapshot.data!
+//                   .map((userData) => _buildUsersListItem(userData, context))
+//                   .toList(),
+//             ),
+//           ),
+//         ],
+//       );
+//     },
+//   );
+// }
 
-  // Widget _buildUsersListItem(Map<String, dynamic> userData, BuildContext context) {
-  //   return UserTile(
-  //     userId: userData['uid'],
-  //     text: userData['email'],
-  //     imgUrl: userData['profilePic'],
-  //     onTap: () {
-  //       Navigator.push(
-  //         context,
-  //           SlideUpNavigationAnimation(child: ProfilePage(userId: userData['uid']))
-  //       );
-  //     },
-  //   );
-  // }
+// Widget _buildUsersListItem(Map<String, dynamic> userData, BuildContext context) {
+//   return UserTile(
+//     userId: userData['uid'],
+//     text: userData['email'],
+//     imgUrl: userData['profilePic'],
+//     onTap: () {
+//       Navigator.push(
+//         context,
+//           SlideUpNavigationAnimation(child: ProfilePage(userId: userData['uid']))
+//       );
+//     },
+//   );
+// }
 }

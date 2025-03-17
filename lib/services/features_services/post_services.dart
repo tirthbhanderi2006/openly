@@ -86,15 +86,25 @@ class PostServices {
       throw Exception('Failed to remove bookmark: $e');
     }
   }
-  // this function will remove post from feed
 
+  // this function will remove post from feed
 
   Stream<List<PostModel>> getBookmarksStream() {
     final userId = FirebaseAuth.instance.currentUser!.uid;
-      return _firestore
+    return _firestore
         .collection("users")
         .doc(userId)
         .collection("bookmarks")
+        .snapshots()
+        .map((querySnapshot) => querySnapshot.docs
+            .map((doc) => PostModel.fromJson(doc.data()))
+            .toList());
+  }
+
+  Stream<List<PostModel>> getPostsByUser({required String userId}) {
+    return _firestore
+        .collection("posts")
+        .where("userId", isEqualTo: userId)
         .snapshots()
         .map((querySnapshot) => querySnapshot.docs
             .map((doc) => PostModel.fromJson(doc.data()))

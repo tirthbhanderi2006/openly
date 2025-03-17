@@ -132,8 +132,8 @@ class _ChatPageState extends State<ChatPage> {
       //   const SnackBar(content: Text('Image sent successfully')),
       // );
       Get.snackbar("Message", "Image sent successfully!",
-        colorText: Colors.white,
-        backgroundColor: Colors.green,
+          colorText: Colors.white,
+          backgroundColor: Colors.green,
           snackPosition: SnackPosition.BOTTOM);
       Navigator.pop(context);
     }
@@ -165,7 +165,7 @@ class _ChatPageState extends State<ChatPage> {
         //   SnackBar(content: Text('Failed to send image: ${e.toString()}')),
         // );
         Get.snackbar("Message", "Failed to send image: ${e.toString()}",
-            snackPosition: SnackPosition.BOTTOM,colorText: Colors.red);
+            snackPosition: SnackPosition.BOTTOM, colorText: Colors.red);
       }
     } else {
       // ScaffoldMessenger.of(context).showSnackBar(
@@ -320,8 +320,8 @@ class _ChatPageState extends State<ChatPage> {
               child: Row(
                 children: [
                   Icon(
-                    Icons
-                        .image_not_supported_outlined, // FlutterRemix icon for remove background
+                    Icons.image_not_supported_outlined,
+                    // FlutterRemix icon for remove background
                     color: Theme.of(context).colorScheme.onSurface,
                     size: 20,
                   ),
@@ -389,7 +389,6 @@ class _ChatPageState extends State<ChatPage> {
             color: ThemeProvider().isDarkMode ? Colors.white : Colors.black),
         onPressed: () => Navigator.pop(context),
       ),
-      
       title: Row(
         children: [
           GestureDetector(
@@ -428,7 +427,6 @@ class _ChatPageState extends State<ChatPage> {
       ),
       backgroundColor: Theme.of(context).colorScheme.background,
       elevation: 4,
-
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(bottom: Radius.circular(15)),
       ),
@@ -446,7 +444,7 @@ class _ChatPageState extends State<ChatPage> {
         if (snapshot.hasError) {
           return Center(child: Text('Error: ${snapshot.error}'));
         }
-        if(snapshot.data == null || snapshot.data!.docs.isEmpty){
+        if (snapshot.data == null || snapshot.data!.docs.isEmpty) {
           return Center(child: ChatUtils.emptyChatWidget(context));
         }
         return ListView.builder(
@@ -510,14 +508,16 @@ class _ChatPageState extends State<ChatPage> {
                       color: theme.colorScheme.onBackground.withOpacity(0.5),
                       fontSize: 16,
                     ),
-                    border: InputBorder.none, // Remove default border
+                    border: InputBorder.none,
+                    // Remove default border
                     contentPadding: const EdgeInsets.symmetric(vertical: 16),
                     filled: true,
                     fillColor: Colors.transparent, // Transparent background
                   ),
-                  maxLines: null, // Allow multiple lines
-                  keyboardType:
-                      TextInputType.multiline, // Enable multiline input
+                  maxLines: null,
+                  // Allow multiple lines
+                  keyboardType: TextInputType.multiline,
+                  // Enable multiline input
                   textCapitalization: TextCapitalization.sentences,
                 ),
               ),

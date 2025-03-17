@@ -138,13 +138,9 @@ class ChatUtils {
               Text(
                 'No messages yet',
                 style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context)
-                      .textTheme
-                      .bodyLarge
-                      ?.color, // Adapts text color
-                ),
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.primary),
               ),
               // Removed the SizedBox with height 8
               Text(
@@ -153,9 +149,8 @@ class ChatUtils {
                 style: TextStyle(
                   fontSize: 14,
                   color: Theme.of(context)
-                      .textTheme
-                      .bodyMedium
-                      ?.color, // Adjusts for theme
+                      .colorScheme
+                      .primary, // Adjusts for theme
                 ),
               ),
             ],
