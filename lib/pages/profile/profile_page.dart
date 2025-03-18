@@ -166,122 +166,132 @@ class _ProfilePageState extends State<ProfilePage> with RouteAware {
                     ],
                   ),*/
                   Obx(
-                        () => UserProfileStats(
-                          email: userDetails['email'],
-                          profileImageUrl: userDetails['profilePic'],
-                          userId: userDetails['uid'],
-                          name: userDetails['name'],
-                          followers: profileController.followers,
-                          following: profileController.following,
-                          postsCount: profileController.posts.length),
+                    () => UserProfileStats(
+                        email: userDetails['email'],
+                        profileImageUrl: userDetails['profilePic'],
+                        userId: userDetails['uid'],
+                        name: userDetails['name'],
+                        followers: profileController.followers,
+                        following: profileController.following,
+                        postsCount: profileController.posts.length),
                   ),
 
                   const SizedBox(height: 15),
-                  FirebaseAuth.instance.currentUser!.uid !=
-                      widget.userId
+                  FirebaseAuth.instance.currentUser!.uid != widget.userId
                       ? Row(
-                    children: [
-                      Expanded(
-                        child: FirebaseAuth.instance.currentUser!.uid !=
-                                widget.userId
-                            ? Obx(() {
-                                final isFollowing = (profileController
-                                            .userDetails['followers'] ??
-                                        [])
-                                    .contains(
-                                        FirebaseAuth.instance.currentUser!.uid);
-                                return Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    // Follow/Unfollow Button
-                                    ConstrainedBox(
-                                      constraints: BoxConstraints.tightFor(
-                                          width: 120, height: 50),
-                                      child: ElevatedButton(
-                                        onPressed: () {
-                                          profileController.toggleFollow(
-                                            FirebaseAuth
-                                                .instance.currentUser!.uid,
-                                            widget.userId,
-                                          );
-                                        },
-                                        style: ElevatedButton.styleFrom(
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(10),
-                                          ),
-                                          backgroundColor: Colors.blue,
-                                        ),
-                                        child: Text(
-                                          isFollowing ? 'Unfollow' : 'Follow',
-                                          style: TextStyle(color: Colors.white),
-                                        ),
-                                      ),
-                                    ),
-                                    if (isFollowing) ...[
-                                      SizedBox(
-                                          width: 10), // Spacing between buttons
-                                      // Message Button
-                                      ConstrainedBox(
-                                        constraints: BoxConstraints.tightFor(
-                                            width: 120, height: 50),
-                                        child: ElevatedButton(
-                                          onPressed: () {
-                                            // Navigate to the chat screen or message functionality
-                                            Navigator.push(
-                                                context,
-                                                SlideRightPageTransition(
-                                                    child: ChatPage(
-                                                        receiverEmail:
-                                                            userDetails[
-                                                                'email'],
-                                                        receiverId: userDetails[
-                                                            'uid'])));
-                                          },
-                                          style: ElevatedButton.styleFrom(
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(10),
+                          children: [
+                            Expanded(
+                              child: FirebaseAuth.instance.currentUser!.uid !=
+                                      widget.userId
+                                  ? Obx(() {
+                                      final isFollowing = (profileController
+                                                  .userDetails['followers'] ??
+                                              [])
+                                          .contains(FirebaseAuth
+                                              .instance.currentUser!.uid);
+                                      return Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          // Follow/Unfollow Button
+                                          ConstrainedBox(
+                                            constraints:
+                                                BoxConstraints.tightFor(
+                                                    width: 120, height: 50),
+                                            child: ElevatedButton(
+                                              onPressed: () {
+                                                profileController.toggleFollow(
+                                                  FirebaseAuth.instance
+                                                      .currentUser!.uid,
+                                                  widget.userId,
+                                                );
+                                              },
+                                              style: ElevatedButton.styleFrom(
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(10),
+                                                ),
+                                                backgroundColor: Colors.blue,
+                                              ),
+                                              child: Text(
+                                                isFollowing
+                                                    ? 'Unfollow'
+                                                    : 'Follow',
+                                                style: TextStyle(
+                                                    color: Colors.white),
+                                              ),
                                             ),
-                                            backgroundColor: Colors.green,
                                           ),
-                                          child: Text(
-                                            'Message',
-                                            style:
-                                                TextStyle(color: Colors.white),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ],
-                                );
-                              })
-                            : Text(""),
-                      ),
-                    ],
-                  )
-                      :SizedBox.shrink(),
-                  userDetails['bio'].toString().isNotEmpty? const SizedBox(height: 15):SizedBox.shrink(),
+                                          if (isFollowing) ...[
+                                            SizedBox(
+                                                width:
+                                                    10), // Spacing between buttons
+                                            // Message Button
+                                            ConstrainedBox(
+                                              constraints:
+                                                  BoxConstraints.tightFor(
+                                                      width: 120, height: 50),
+                                              child: ElevatedButton(
+                                                onPressed: () {
+                                                  // Navigate to the chat screen or message functionality
+                                                  Navigator.push(
+                                                      context,
+                                                      SlideRightPageTransition(
+                                                          child: ChatPage(
+                                                              receiverEmail:
+                                                                  userDetails[
+                                                                      'email'],
+                                                              receiverId:
+                                                                  userDetails[
+                                                                      'uid'])));
+                                                },
+                                                style: ElevatedButton.styleFrom(
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            10),
+                                                  ),
+                                                  backgroundColor: Colors.green,
+                                                ),
+                                                child: Text(
+                                                  'Message',
+                                                  style: TextStyle(
+                                                      color: Colors.white),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ],
+                                      );
+                                    })
+                                  : Text(""),
+                            ),
+                          ],
+                        )
+                      : SizedBox.shrink(),
+                  userDetails['bio'].toString().isNotEmpty
+                      ? const SizedBox(height: 15)
+                      : SizedBox.shrink(),
                   userDetails['bio'].toString().isNotEmpty
                       ? Padding(
-                    padding: const EdgeInsets.only(left: 8.0),
-                    child: Row(
-                      children: [
-                        Text(
-                          'Bio',
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.primary,
+                          padding: const EdgeInsets.only(left: 8.0),
+                          child: Row(
+                            children: [
+                              Text(
+                                'Bio',
+                                style: TextStyle(
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                      ],
-                    ),
-                  )
+                        )
                       : SizedBox.shrink(),
                   const SizedBox(height: 10),
                   userDetails['bio'].toString().isNotEmpty
                       ? BioBox(
-                    bioText: userDetails['bio'] ?? "No bio available",
-                  )
+                          bioText: userDetails['bio'] ?? "No bio available",
+                        )
                       : SizedBox.shrink(),
                   SizedBox(
                     height: 2,
@@ -323,10 +333,12 @@ class _ProfilePageState extends State<ProfilePage> with RouteAware {
                     SizedBox(
                       height: 6,
                     ),
-                    Text(
-                      "No posts yet!!",
-                      style: TextStyle(
-                          color: Theme.of(context).colorScheme.primary),
+                    Expanded(
+                      child: Text(
+                        "No posts yet!!",
+                        style: TextStyle(
+                            color: Theme.of(context).colorScheme.primary),
+                      ),
                     ),
                   ],
                 );
