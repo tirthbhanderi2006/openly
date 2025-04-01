@@ -11,6 +11,7 @@ import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../components/features_components/search_user_tile.dart';
 
+// ignore: must_be_immutable
 class FollowersList extends StatelessWidget {
   final List<String> followers;
   final List<String> following;

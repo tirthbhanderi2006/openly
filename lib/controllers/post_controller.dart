@@ -28,7 +28,9 @@ class PostController extends GetxController {
 
   void initPost(PostModel post) {
     likes.value = post.likes;
-    isLiked.value = post.likes.contains(FirebaseAuth.instance.currentUser!.uid);
+    // Add null check for currentUser to prevent null exception after logout
+    final currentUser = FirebaseAuth.instance.currentUser;
+    isLiked.value = currentUser != null && post.likes.contains(currentUser.uid);
   }
 
   Future<void> toggleLike({

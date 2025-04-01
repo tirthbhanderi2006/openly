@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -11,7 +10,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:mithc_koko_chat_app/components/chat_components/chat_bubble.dart';
 import 'package:mithc_koko_chat_app/controllers/chat_background_controller.dart';
 import 'package:mithc_koko_chat_app/pages/chat/image_grid.dart';
-import 'package:mithc_koko_chat_app/pages/profile/profile_page.dart';
 import 'package:mithc_koko_chat_app/pages/settings/setting_page.dart';
 import 'package:mithc_koko_chat_app/services/chat_services/call_services.dart';
 import 'package:mithc_koko_chat_app/utils/chat_utils/chat_utils.dart';
@@ -21,6 +19,7 @@ import '../../services/chat_services/chat_services.dart';
 import 'package:lottie/lottie.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
 
+// ignore: must_be_immutable
 class ChatPage extends StatefulWidget {
   final String receiverEmail;
   final String receiverId;

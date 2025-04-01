@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mithc_koko_chat_app/components/widgets_components/my_bottombar.dart';
+import 'package:mithc_koko_chat_app/pages/auth/login_or_register.dart';
 import 'package:mithc_koko_chat_app/pages/chat/chat_group_tab.dart';
 import 'package:mithc_koko_chat_app/pages/features/create_post_page.dart';
 import 'package:mithc_koko_chat_app/pages/features/search_page.dart';
@@ -17,14 +18,15 @@ class MainHome extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    List<Widget> pages = [
-      HomePage(),
-      SearchPage(),
-      CreatePostPage(),
-      ProfilePage(userId: FirebaseAuth.instance.currentUser!.uid),
-      // UsersPage()
-      ChatGroupTabLayout()
-    ];
+    List<Widget> pages = FirebaseAuth.instance.currentUser != null
+        ? [
+            HomePage(),
+            SearchPage(),
+            CreatePostPage(),
+            ProfilePage(userId: FirebaseAuth.instance.currentUser!.uid),
+            ChatGroupTabLayout()
+          ]
+        : [LoginOrRegister()]; // Replace with your login page
 
     return Scaffold(
         extendBody: true,

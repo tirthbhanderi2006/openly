@@ -146,33 +146,33 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                     },
                   );
                 },
-              ):
-              SizedBox.shrink(), 
-              // block option
-            // : PopupMenuButton<String>(
-            //     icon: Icon(
-            //       Icons.more_vert,
-            //       color: Theme.of(context).colorScheme.primary,
-            //     ),
-            //     onSelected: (value) {
-            //       if (value == 'block') {
-            //         ChatServices().blockUser(widget.userId);
-            //       }
-            //     },
-            //     itemBuilder: (context) => [
-            //       PopupMenuItem<String>(
-            //         value: 'block',
-            //         child: Row(
-            //           children: [
-            //             Icon(Icons.block,
-            //                 color: Theme.of(context).colorScheme.error),
-            //             const SizedBox(width: 10),
-            //             const Text('Block User'),
-            //           ],
-            //         ),
-            //       ),
-            //     ],
-            //   ),
+              )
+            : SizedBox.shrink(),
+        // block option
+        // : PopupMenuButton<String>(
+        //     icon: Icon(
+        //       Icons.more_vert,
+        //       color: Theme.of(context).colorScheme.primary,
+        //     ),
+        //     onSelected: (value) {
+        //       if (value == 'block') {
+        //         ChatServices().blockUser(widget.userId);
+        //       }
+        //     },
+        //     itemBuilder: (context) => [
+        //       PopupMenuItem<String>(
+        //         value: 'block',
+        //         child: Row(
+        //           children: [
+        //             Icon(Icons.block,
+        //                 color: Theme.of(context).colorScheme.error),
+        //             const SizedBox(width: 10),
+        //             const Text('Block User'),
+        //           ],
+        //         ),
+        //       ),
+        //     ],
+        //   ),
       ],
     );
   }

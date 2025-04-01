@@ -32,7 +32,6 @@ class EditGroupPage extends StatefulWidget {
 class _EditGroupPageState extends State<EditGroupPage> with RouteAware {
   final TextEditingController _groupNameController = TextEditingController();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
   final GlobalKey<FormState> _formKey =
       GlobalKey<FormState>(); // Form key for validation
 

@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_remix/flutter_remix.dart';
-import 'package:mithc_koko_chat_app/pages/chat/create_group.dart';
 import 'package:mithc_koko_chat_app/pages/chat/group_chat_screen.dart';
 import 'package:mithc_koko_chat_app/services/chat_services/group_chat_services.dart';
 import 'package:mithc_koko_chat_app/utils/page_transition/slide_right_page_transition.dart';
-import 'package:mithc_koko_chat_app/utils/page_transition/slide_up_page_transition.dart';
 
 class ShowGroup extends StatelessWidget {
   const ShowGroup({super.key});

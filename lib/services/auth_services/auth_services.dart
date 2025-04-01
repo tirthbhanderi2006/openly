@@ -82,20 +82,33 @@ class AuthService {
     return token;
   }
 
-  // Sign Out
-  Future<void> logout(context) async {
+  Future<void> logout(BuildContext context) async {
     try {
-      if (_auth.currentUser != null) {
-        await _auth.signOut();
+      await _auth.signOut(); // Ensure sign-out completes
+
+      if (context.mounted) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => LoginOrRegister()),
+          (Route<dynamic> route) => false, // Remove all previous routes
+        );
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Logout Successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
       }
-      Get.offAll(() => LoginOrRegister());
-      Get.snackbar('Logout', 'Logout Successfully',
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
-          snackPosition: SnackPosition.BOTTOM);
     } catch (e) {
-      Get.snackbar('Error', 'Error signing out: $e',
-          backgroundColor: Colors.red, colorText: Colors.white);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error signing out: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 

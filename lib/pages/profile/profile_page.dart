@@ -5,7 +5,6 @@ import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
 import 'package:mithc_koko_chat_app/components/profile_components/profile_info.dart';
-import 'package:mithc_koko_chat_app/components/profile_components/profile_picture.dart';
 import 'package:mithc_koko_chat_app/components/profile_components/profile_post.dart';
 import 'package:mithc_koko_chat_app/components/profile_components/bio_box.dart';
 import 'package:mithc_koko_chat_app/controllers/navigation_controller.dart';

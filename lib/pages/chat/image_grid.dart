@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:mithc_koko_chat_app/components/chat_components/full_image_preview.dart';
 import 'package:mithc_koko_chat_app/utils/page_transition/slide_right_page_transition.dart';
-import 'package:mithc_koko_chat_app/utils/page_transition/slide_up_page_transition.dart';
 
 class ImageGrid extends StatelessWidget {
   final List<String> imageUrls;

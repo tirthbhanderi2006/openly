@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:mithc_koko_chat_app/model/post_model.dart';
-import 'package:mithc_koko_chat_app/pages/features/create_post_page.dart';
 import 'package:mithc_koko_chat_app/services/features_services/post_services.dart';
-import 'package:mithc_koko_chat_app/utils/page_transition/slide_up_page_transition.dart';
 
 import '../../components/features_components/post_tile.dart';
 import '../../components/widgets_components/create_post_button.dart';

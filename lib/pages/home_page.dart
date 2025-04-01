@@ -1,14 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_remix/flutter_remix.dart';
 import 'package:lottie/lottie.dart';
 import 'package:mithc_koko_chat_app/components/features_components/post_tile.dart';
 import 'package:mithc_koko_chat_app/components/widgets_components/user_grid.dart';
 import 'package:mithc_koko_chat_app/model/post_model.dart';
-import 'package:mithc_koko_chat_app/utils/page_transition/slide_up_page_transition.dart';
 import '../components/widgets_components/create_post_button.dart';
-import 'features/create_post_page.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -71,8 +68,14 @@ class HomePage extends StatelessWidget {
   }
 
   Widget _buildAllPosts() {
-    final currentUserId = FirebaseAuth.instance.currentUser!.uid;
-
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) {
+      // Handle the case when user is not logged in
+      return const Center(
+        child: Text('Please log in to view posts'),
+      );
+    }
+    final currentUserId = currentUser.uid;
     return FutureBuilder<List<String>>(
       future: _getFollowingList(currentUserId),
       builder: (context, followingSnapshot) {
