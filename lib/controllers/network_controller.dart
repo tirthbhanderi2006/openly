@@ -14,7 +14,8 @@ class NetworkController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-      _connectivitySubscription = _connectivity.onConnectivityChanged.listen((connectivityResults) {
+    _connectivitySubscription =
+        _connectivity.onConnectivityChanged.listen((connectivityResults) {
       _updateConnectionStatus(connectivityResults);
     });
   }
@@ -65,60 +66,64 @@ class NetworkController extends GetxController {
     _dialogContext = Get.context; // Store the context for dialog
     showDialog(
       context: _dialogContext!,
+
       barrierDismissible: false, // Don't allow dismissing by tapping outside
       builder: (BuildContext context) {
-        return ClipRRect(
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-            child: AlertDialog(
-              backgroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15.0),
-              ),
-              title: Column(
-                children: [
-                  Lottie.asset(
-                    'lib/assets/no_internet.json',
-                    height: 120,
-                    width: 120,
-                    fit: BoxFit.contain,
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    "No Internet Connection",
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.red,
+        return PopScope(
+          canPop: false, // Prevent dismissing by back button,
+          child: ClipRRect(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+              child: AlertDialog(
+                backgroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15.0),
+                ),
+                title: Column(
+                  children: [
+                    Lottie.asset(
+                      'lib/assets/no_internet.json',
+                      height: 120,
+                      width: 120,
+                      fit: BoxFit.contain,
                     ),
-                  ),
-                ],
-              ),
-              content: const Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    "Please connect to the internet to continue.",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.black87,
-                      height: 1.5,
+                    const SizedBox(height: 16),
+                    const Text(
+                      "No Internet Connection",
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.red,
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 10),
-                  Text(
-                    "Check your Wi-Fi or mobile data connection.",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey,
+                  ],
+                ),
+                content: const Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      "Please connect to the internet to continue.",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.black87,
+                        height: 1.5,
+                      ),
                     ),
-                  ),
-                ],
+                    SizedBox(height: 10),
+                    Text(
+                      "Check your Wi-Fi or mobile data connection.",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ],
+                ),
+                actionsAlignment: MainAxisAlignment.center,
+                actionsPadding: const EdgeInsets.only(bottom: 16),
               ),
-              actionsAlignment: MainAxisAlignment.center,
-              actionsPadding: const EdgeInsets.only(bottom: 16),
             ),
           ),
         );
@@ -127,7 +132,7 @@ class NetworkController extends GetxController {
   }
 
   bool get isConnected => _isConnected;
-  
+
   @override
   void onClose() {
     _connectivitySubscription?.cancel();

@@ -6,6 +6,8 @@ import 'package:get/get.dart';
 import 'package:mithc_koko_chat_app/pages/auth/login_or_register.dart';
 import 'package:mithc_koko_chat_app/model/user_model.dart';
 
+import '../../pages/splash_screen.dart';
+
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -82,35 +84,42 @@ class AuthService {
     return token;
   }
 
-  Future<void> logout(BuildContext context) async {
-    try {
-      await _auth.signOut(); // Ensure sign-out completes
-
-      if (context.mounted) {
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (context) => LoginOrRegister()),
-          (Route<dynamic> route) => false, // Remove all previous routes
-        );
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Logout Successfully'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error signing out: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+ Future<void> logout(BuildContext context) async {
+  try {
+    // Clear FCM token before logout
+    String? userId = _auth.currentUser?.uid;
+    if (userId != null) {
+      await _firestore.collection('users').doc(userId).update({
+        'fcmToken': null,
+      });
     }
+    
+    // Sign out from Firebase
+    await _auth.signOut();
+
+    // Navigate to splash screen using GetX (handles context better)
+    Get.offAll(() => SplashScreen(), transition: Transition.fadeIn);
+    
+    // Show success message
+    Get.snackbar(
+      'Success',
+      'Logged out successfully',
+      backgroundColor: Colors.green,
+      colorText: Colors.white,
+      snackPosition: SnackPosition.BOTTOM,
+    );
+    
+  } catch (e) {
+    // Show error message
+    Get.snackbar(
+      'Error',
+      'Error signing out: $e',
+      backgroundColor: Colors.red,
+      colorText: Colors.white,
+      snackPosition: SnackPosition.BOTTOM,
+    );
   }
+}
 
 //   get current user details
   Future<Map<String, dynamic>?> getUserDetails() async {

@@ -9,9 +9,10 @@ class CallServices {
 
 
 // credentials for video audio calls and group calls using Zego
-  final _APP_ID = 482616865;
-  final _APP_SIGN ='69c2940bbaac4ae2e8d94ffc1343fde1fed742133c9cfb9eedef243e6912e5c1';
-  
+  // final _APP_ID = 482616865;
+  // final _APP_SIGN ='69c2940bbaac4ae2e8d94ffc1343fde1fed742133c9cfb9eedef243e6912e5c1';
+  final _APP_ID = 2097930829;
+  final _APP_SIGN ='87997944ee178356bfd5524740210cdbb07c71c6d4aa7636bc9e8b0b5c88b0e7';
   //FOR VIDEO CALLS
 
   void startVideoCall(
