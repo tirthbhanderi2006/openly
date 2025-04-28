@@ -30,7 +30,7 @@ class SettingPage extends StatelessWidget {
           style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 18,
-              color: Theme.of(context).colorScheme.secondary),
+              color: Theme.of(context).colorScheme.primary),
         ),
         centerTitle: true,
         backgroundColor: Colors.transparent,
@@ -41,24 +41,24 @@ class SettingPage extends StatelessWidget {
       body: Stack(
         children: [
           /// Background Animation
-          Positioned.fill(
-            child:
-                Lottie.asset('lib/assets/settings-bg.json', fit: BoxFit.cover),
-          ),
+          // Positioned.fill(
+          //   child:
+          //       Lottie.asset('lib/assets/settings-bg.json', fit: BoxFit.cover),
+          // ),
 
-          /// Glassmorphism Blur Effect
-          Positioned.fill(
-            child: ClipRRect(
-              child: BackdropFilter(
-                filter: ImageFilter.blur(
-                    sigmaX: 5, sigmaY: 5), // More blur for a premium look
-                child: Container(
-                  color: Colors.black.withOpacity(
-                      0.2), // Subtle dark overlay for better visibility
-                ),
-              ),
-            ),
-          ),
+          // /// Glassmorphism Blur Effect
+          // Positioned.fill(
+          //   child: ClipRRect(
+          //     child: BackdropFilter(
+          //       filter: ImageFilter.blur(
+          //           sigmaX: 5, sigmaY: 5), // More blur for a premium look
+          //       child: Container(
+          //         color: Colors.black.withOpacity(
+          //             0.2), // Subtle dark overlay for better visibility
+          //       ),
+          //     ),
+          //   ),
+          // ),
 
           /// Settings Options
           Center(
@@ -123,55 +123,61 @@ class SettingPage extends StatelessWidget {
   }
 
   /// Reusable Settings Card Widget
-  Widget _buildSettingsCard(
-    BuildContext context, {
-    required String title,
-    required IconData icon,
-    Widget? trailing,
-    VoidCallback? onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 15),
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          color: Colors.white.withOpacity(0.1), // Glass effect
-          border: Border.all(color: Colors.white.withOpacity(0.2)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.2),
-              blurRadius: 10,
-              spreadRadius: 1,
-              offset: const Offset(0, 4),
-            )
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              children: [
-                Icon(icon, color: Colors.white, size: 28), // Icon
-                const SizedBox(width: 15),
-                Text(
-                  title,
-                  style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white),
-                ),
-              ],
-            ),
-            trailing ??
-                const Icon(Icons.arrow_forward_ios,
-                    color: Colors.white, size: 18),
-          ],
-        ),
+Widget _buildSettingsCard(
+  BuildContext context, {
+  required String title,
+  required IconData icon,
+  Widget? trailing,
+  VoidCallback? onTap,
+}) {
+  return GestureDetector(
+    onTap: onTap,
+    child: Container(
+      margin: const EdgeInsets.only(bottom: 15),
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        color: Theme.of(context).colorScheme.surface,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            spreadRadius: 0,
+            offset: const Offset(0, 2),
+          )
+        ],
       ),
-    );
-  }
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [
+              Icon(
+                icon,
+                color: Theme.of(context).colorScheme.onSurface,
+                size: 28
+              ),
+              const SizedBox(width: 15),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.onSurface
+                ),
+              ),
+            ],
+          ),
+          trailing ?? Icon(
+            Icons.arrow_forward_ios,
+            color: Theme.of(context).colorScheme.onSurface,
+            size: 18
+          ),
+        ],
+      ),
+    ),
+  );
+}
 
 // font selection dialog
   _showFontSelectionDialog(context) {

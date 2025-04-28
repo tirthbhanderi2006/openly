@@ -13,8 +13,30 @@ class PostServices {
 
   Future<void> deletePost({required String postId}) async {
     await _firestore.collection("posts").doc(postId).delete();
+    await _cleanupBookmarks(postId);
   }
-
+Future<void> _cleanupBookmarks(String postId) async {
+  try {
+    // Get all users
+    final usersSnapshot = await _firestore.collection("users").get();
+    
+    // For each user, check and remove the bookmark if it exists
+    for (var userDoc in usersSnapshot.docs) {
+      final bookmarkRef = _firestore
+          .collection("users")
+          .doc(userDoc.id)
+          .collection("bookmarks")
+          .doc(postId);
+          
+      final bookmarkDoc = await bookmarkRef.get();
+      if (bookmarkDoc.exists) {
+        await bookmarkRef.delete();
+      }
+    }
+  } catch (e) {
+    print('Error cleaning up bookmarks: $e');
+  }
+}
   Future<void> toggleLike(
       {required String postId, required String userId}) async {
     try {
